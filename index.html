@@ -2934,8 +2934,10 @@
                     const formData = new FormData();
                     formData.append('name', name);
                     formData.append('email', email);
+                    formData.append('_replyto', email);
                     formData.append('_subject', subject);
                     formData.append('message', message);
+                    formData.append('_template', 'table');
                     formData.append('_captcha', 'false');
 
                     fetch('https://formsubmit.co/ajax/hasenbashree@gmail.com', {
@@ -2957,8 +2959,8 @@
                             // Check for local file protocol issue
                             if (window.location.protocol === 'file:' || (serverMsg && serverMsg.includes('browsed as HTML files'))) {
                                 serverMsg = 'FormSubmit requires running your website on a web server (e.g. GitHub Pages, Netlify, or Live Server) rather than local file://.';
-                            } else if (serverMsg && serverMsg.toLowerCase().includes('activate')) {
-                                serverMsg = 'FormSubmit activation required! Please check your email (hasenbashree@gmail.com) and click "Activate Form".';
+                            } else if (serverMsg && serverMsg.toLowerCase().includes('activat')) {
+                                serverMsg = '📧 <strong>Activation Required!</strong> FormSubmit sent an email to <strong>hasenbashree@gmail.com</strong>. Please open your Gmail inbox and click the <strong>"Activate Form"</strong> button. After clicking it once, all form messages will be sent successfully!';
                             }
                             
                             const htmlError = `❌ ${serverMsg}<br/>
