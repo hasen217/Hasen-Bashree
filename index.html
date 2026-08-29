@@ -2550,7 +2550,23 @@
             // ============================================================
             // 15. INIT
             // ============================================================
-            function init() {
+            async function init() {
+                try {
+                    const res = await fetch('/api/content');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.techStack) techStack = data.techStack;
+                        if (data.projects) projects = data.projects;
+                        if (data.blogPosts) blogPosts = data.blogPosts;
+                        if (data.testimonials) testimonials = data.testimonials;
+                        if (data.translations) translations = data.translations;
+                    } else {
+                        console.error('Failed to fetch content, status:', res.status);
+                    }
+                } catch (e) {
+                    console.error('Error fetching dynamic content from server:', e);
+                }
+
                 // Theme
                 const theme = getPreferredTheme();
                 setTheme(theme);
