@@ -96,6 +96,34 @@ app.get('/api/messages', async (req, res) => {
     res.json({ success: true, messages });
 });
 
+const CONTENT_FILE = path.join(__dirname, 'content.json');
+
+// API Endpoint to get portfolio content
+app.get('/api/content', async (req, res) => {
+    try {
+        const data = await fs.readFile(CONTENT_FILE, 'utf8');
+        res.json(JSON.parse(data));
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Could not load content' });
+    }
+});
+
+// API Endpoint to update portfolio content (Protected)
+app.post('/api/content', async (req, res) => {
+    const password = req.headers['x-admin-password'];
+    
+    if (password !== process.env.ADMIN_PASSWORD) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    try {
+        await fs.writeFile(CONTENT_FILE, JSON.stringify(req.body, null, 2));
+        res.json({ success: true, message: 'Content updated successfully!' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to update content' });
+    }
+});
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
