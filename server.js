@@ -14,6 +14,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files (HTML, CSS, JS) from the current directory
+app.use(express.static(__dirname));
+
 // Setup Nodemailer transporter
 const transporter = nodemailer.createTransport({
     service: 'gmail',
