@@ -2847,14 +2847,19 @@
                 console.warn('⚠️ EmailJS public key not set. Please configure EMAILJS_CONFIG in the script.');
             }
 
-            function setFormStatus(message, type) {
-                formStatus.textContent = message;
+            function setFormStatus(message, type, isHtml = false) {
+                if (isHtml) {
+                    formStatus.innerHTML = message;
+                } else {
+                    formStatus.textContent = message;
+                }
                 formStatus.className = 'form-status ' + type;
             }
 
             function clearFormStatus() {
                 formStatus.className = 'form-status';
                 formStatus.textContent = '';
+                formStatus.innerHTML = '';
             }
 
             function setFieldError(field, hasError) {
@@ -2896,6 +2901,8 @@
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
 
+                const mailtoUrl = `mailto:hasenbashree@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent("Name: " + name + "\nEmail: " + email + "\n\n" + message)}`;
+
                 if (isEmailJSConfigured) {
                     // Send via EmailJS
                     const templateParams = {
@@ -2912,7 +2919,11 @@
                         })
                         .catch(function(error) {
                             console.error('EmailJS error:', error);
-                            setFormStatus('❌ Something went wrong. Please try again or email me directly at hasenbashree@gmail.com.', 'error');
+                            const errHtml = `❌ Something went wrong sending via EmailJS.<br/>
+                            <a href="${mailtoUrl}" target="_blank" style="display:inline-block; margin-top:8px; padding:6px 14px; background:var(--primary); color:#fff; border-radius:4px; text-decoration:none; font-size:0.85rem;">
+                                <i class="fas fa-envelope"></i> Send via Email Client Instead
+                            </a>`;
+                            setFormStatus(errHtml, 'error', true);
                         })
                         .finally(function() {
                             submitBtn.disabled = false;
@@ -2920,19 +2931,19 @@
                         });
                 } else {
                     // Send directly to hasenbashree@gmail.com via FormSubmit AJAX service
+                    const formData = new FormData();
+                    formData.append('name', name);
+                    formData.append('email', email);
+                    formData.append('_subject', subject);
+                    formData.append('message', message);
+                    formData.append('_captcha', 'false');
+
                     fetch('https://formsubmit.co/ajax/hasenbashree@gmail.com', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify({
-                            name: name,
-                            email: email,
-                            _subject: subject,
-                            message: message,
-                            _captcha: 'false'
-                        })
+                        body: formData
                     })
                     .then(function(response) { return response.json(); })
                     .then(function(data) {
@@ -2940,12 +2951,30 @@
                             setFormStatus('✅ Your message was sent successfully! I\'ll get back to you soon.', 'success');
                             contactForm.reset();
                         } else {
-                            setFormStatus('❌ Unable to send message. Please try again or email directly at hasenbashree@gmail.com.', 'error');
+                            console.warn('FormSubmit response:', data);
+                            let serverMsg = data.message || 'Unable to send message.';
+                            
+                            // Check for local file protocol issue
+                            if (window.location.protocol === 'file:' || (serverMsg && serverMsg.includes('browsed as HTML files'))) {
+                                serverMsg = 'FormSubmit requires running your website on a web server (e.g. GitHub Pages, Netlify, or Live Server) rather than local file://.';
+                            } else if (serverMsg && serverMsg.toLowerCase().includes('activate')) {
+                                serverMsg = 'FormSubmit activation required! Please check your email (hasenbashree@gmail.com) and click "Activate Form".';
+                            }
+                            
+                            const htmlError = `❌ ${serverMsg}<br/>
+                            <a href="${mailtoUrl}" target="_blank" style="display:inline-block; margin-top:8px; padding:6px 14px; background:var(--primary); color:#fff; border-radius:4px; text-decoration:none; font-weight:500; font-size:0.85rem;">
+                                <i class="fas fa-envelope"></i> Send via Email Client Instead
+                            </a>`;
+                            setFormStatus(htmlError, 'error', true);
                         }
                     })
                     .catch(function(error) {
                         console.error('FormSubmit error:', error);
-                        setFormStatus('❌ Something went wrong. Please try again or email directly at hasenbashree@gmail.com.', 'error');
+                        const htmlError = `❌ Unable to send message right now.<br/>
+                        <a href="${mailtoUrl}" target="_blank" style="display:inline-block; margin-top:8px; padding:6px 14px; background:var(--primary); color:#fff; border-radius:4px; text-decoration:none; font-weight:500; font-size:0.85rem;">
+                            <i class="fas fa-envelope"></i> Send via Email Client Instead
+                        </a>`;
+                        setFormStatus(htmlError, 'error', true);
                     })
                     .finally(function() {
                         submitBtn.disabled = false;
