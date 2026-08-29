@@ -3,334 +3,835 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Portfolio</title>
+    <title>Admin Dashboard - Hasen Portfolio</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg: #f3f4f6;
-            --card-bg: #ffffff;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
+            --bg: #f0f2f5;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
             --primary: #4f46e5;
             --primary-hover: #4338ca;
             --border: #e5e7eb;
-            --error: #ef4444;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --sidebar-bg: #1e1b4b;
+            --sidebar-text: #c7d2fe;
+            --sidebar-active: #4f46e5;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            min-height: 100vh;
-        }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
 
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 2rem;
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 250px; background: var(--sidebar-bg); min-height: 100vh; padding: 1.5rem 0;
+            position: fixed; left: 0; top: 0; z-index: 100;
         }
+        .sidebar-logo { padding: 0 1.5rem 2rem; color: white; font-size: 1.3rem; font-weight: 700; }
+        .sidebar-logo i { margin-right: 8px; color: var(--primary); }
+        .sidebar-nav a {
+            display: flex; align-items: center; padding: 0.8rem 1.5rem; color: var(--sidebar-text);
+            text-decoration: none; font-size: 0.95rem; transition: all 0.2s; gap: 12px; cursor: pointer;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background: rgba(79, 70, 229, 0.2); color: white; border-right: 3px solid var(--primary);
+        }
+        .sidebar-nav a i { width: 20px; text-align: center; }
 
-        /* Login Screen */
+        /* ===== MAIN ===== */
+        .main { margin-left: 250px; padding: 2rem; flex: 1; width: calc(100% - 250px); }
+
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .page-header h2 { font-size: 1.5rem; }
+
+        /* ===== LOGIN ===== */
         #login-screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 80vh;
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 200;
         }
-
         .login-card {
-            background: var(--card-bg);
-            padding: 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
+            background: var(--card); padding: 2.5rem; border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center;
         }
+        .login-card h2 { margin-bottom: 1.5rem; }
 
-        .login-card h2 {
-            margin-bottom: 1.5rem;
-            color: var(--text-main);
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--card); border-radius: 10px; padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 1.5rem;
         }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .card-header h3 { font-size: 1.1rem; }
 
-        .input-group {
-            margin-bottom: 1rem;
-            text-align: left;
+        /* ===== FORMS ===== */
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem; color: var(--muted); }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 0.65rem 0.8rem; border: 1px solid var(--border); border-radius: 6px;
+            font-size: 0.95rem; outline: none; font-family: inherit;
         }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--primary); }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
 
-        .input-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 1rem;
-            outline: none;
-        }
-
-        .input-group input:focus {
-            border-color: var(--primary);
-        }
-
+        /* ===== BUTTONS ===== */
         .btn {
-            width: 100%;
-            padding: 0.75rem;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.3s;
+            padding: 0.6rem 1.2rem; border: none; border-radius: 6px; font-size: 0.9rem;
+            font-weight: 500; cursor: pointer; transition: all 0.2s; display: inline-flex;
+            align-items: center; gap: 6px;
         }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: var(--danger-hover); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn-outline:hover { background: var(--bg); }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+        .btn-lg { padding: 0.8rem 2rem; font-size: 1rem; width: 100%; justify-content: center; }
 
-        .btn:hover {
-            background: var(--primary-hover);
+        /* ===== TABLE ===== */
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td {
+            padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border);
         }
+        .data-table th { font-size: 0.8rem; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+        .data-table td { font-size: 0.9rem; }
+        .data-table tr:hover { background: #f9fafb; }
+        .data-table .actions { display: flex; gap: 6px; }
 
-        .error-msg {
-            color: var(--error);
-            font-size: 0.9rem;
-            margin-top: 1rem;
-            display: none;
-        }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; background: #eef2ff; color: var(--primary); margin: 2px; }
 
-        /* Dashboard */
-        #dashboard-screen {
-            display: none;
-        }
+        /* ===== TABS ===== */
+        .tab-section { display: none; }
+        .tab-section.active { display: block; }
 
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .logout-btn {
-            background: transparent;
-            color: var(--text-muted);
-            border: 1px solid var(--border);
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .logout-btn:hover {
-            background: var(--border);
-            color: var(--text-main);
-        }
-
+        /* ===== MESSAGES ===== */
         .message-card {
-            background: var(--card-bg);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            border-left: 4px solid var(--primary);
+            background: var(--card); border-radius: 8px; padding: 1.25rem; margin-bottom: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06); border-left: 4px solid var(--primary);
         }
+        .message-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+        .sender-info h4 { font-size: 1rem; margin-bottom: 2px; }
+        .sender-info p { font-size: 0.85rem; color: var(--muted); }
+        .message-date { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+        .message-subject { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.3rem; }
+        .message-body { color: var(--text); line-height: 1.6; font-size: 0.9rem; white-space: pre-wrap; }
 
-        .message-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border);
+        .empty-state { text-align: center; padding: 3rem; color: var(--muted); }
+        .empty-state i { font-size: 3rem; margin-bottom: 1rem; display: block; color: var(--border); }
+
+        .error-msg { color: var(--danger); font-size: 0.9rem; margin-top: 0.75rem; display: none; }
+        .success-toast {
+            position: fixed; top: 20px; right: 20px; background: var(--success); color: white;
+            padding: 1rem 1.5rem; border-radius: 8px; font-weight: 500; z-index: 999;
+            display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: fadeIn 0.3s;
         }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .sender-info h3 {
-            font-size: 1.1rem;
-            color: var(--text-main);
-            margin-bottom: 0.25rem;
+        /* ===== STAT CARDS ===== */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card {
+            background: var(--card); border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            display: flex; align-items: center; gap: 1rem;
         }
+        .stat-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .stat-icon.purple { background: #eef2ff; color: var(--primary); }
+        .stat-icon.green { background: #ecfdf5; color: var(--success); }
+        .stat-icon.orange { background: #fff7ed; color: var(--warning); }
+        .stat-icon.red { background: #fef2f2; color: var(--danger); }
+        .stat-info h4 { font-size: 1.4rem; font-weight: 700; }
+        .stat-info p { font-size: 0.8rem; color: var(--muted); }
 
-        .sender-info p {
-            font-size: 0.9rem;
-            color: var(--text-muted);
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 300; justify-content: center; align-items: center;
         }
-
-        .message-date {
-            font-size: 0.85rem;
-            color: var(--text-muted);
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: var(--card); border-radius: 12px; padding: 2rem; width: 100%; max-width: 550px;
+            max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
         }
+        .modal h3 { margin-bottom: 1.25rem; }
+        .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
 
-        .message-subject {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .message-body {
-            color: var(--text-main);
-            line-height: 1.6;
-            white-space: pre-wrap;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: var(--text-muted);
-            background: var(--card-bg);
-            border-radius: 8px;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: var(--border);
+        @media (max-width: 768px) {
+            .sidebar { width: 60px; }
+            .sidebar-logo span, .sidebar-nav a span { display: none; }
+            .main { margin-left: 60px; width: calc(100% - 60px); }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .form-row, .form-row-3 { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- Login Screen -->
-        <div id="login-screen">
-            <div class="login-card">
-                <h2><i class="fas fa-lock"></i> Admin Access</h2>
-                <form id="loginForm">
-                    <div class="input-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" required placeholder="Enter admin password">
-                    </div>
-                    <button type="submit" class="btn">Login</button>
-                    <div class="error-msg" id="loginError">Incorrect password. Please try again.</div>
-                </form>
+    <!-- SUCCESS TOAST -->
+    <div class="success-toast" id="successToast"><i class="fas fa-check-circle"></i> <span id="toastText">Saved!</span></div>
+
+    <!-- ===== LOGIN ===== -->
+    <div id="login-screen">
+        <div class="login-card">
+            <h2><i class="fas fa-lock"></i> Admin Login</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required placeholder="Enter admin password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg">Login</button>
+                <div class="error-msg" id="loginError">Incorrect password.</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== SIDEBAR ===== -->
+    <div class="sidebar" id="sidebar" style="display:none">
+        <div class="sidebar-logo"><i class="fas fa-shield-alt"></i> <span>Admin Panel</span></div>
+        <nav class="sidebar-nav">
+            <a class="active" onclick="switchTab('dashboard')"><i class="fas fa-home"></i> <span>Dashboard</span></a>
+            <a onclick="switchTab('skills')"><i class="fas fa-code"></i> <span>Skills</span></a>
+            <a onclick="switchTab('projects')"><i class="fas fa-project-diagram"></i> <span>Projects</span></a>
+            <a onclick="switchTab('blog')"><i class="fas fa-blog"></i> <span>Blog Posts</span></a>
+            <a onclick="switchTab('testimonials')"><i class="fas fa-quote-left"></i> <span>Testimonials</span></a>
+            <a onclick="switchTab('about')"><i class="fas fa-user"></i> <span>About / Hero</span></a>
+            <a onclick="switchTab('messages')"><i class="fas fa-envelope"></i> <span>Messages</span></a>
+            <a onclick="logout()" style="margin-top:2rem; color:#f87171;"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+        </nav>
+    </div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main" id="mainContent" style="display:none">
+
+        <!-- ===== DASHBOARD ===== -->
+        <div class="tab-section active" id="tab-dashboard">
+            <div class="page-header"><h2>Dashboard</h2></div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i class="fas fa-code"></i></div>
+                    <div class="stat-info"><h4 id="statSkills">0</h4><p>Skills</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fas fa-project-diagram"></i></div>
+                    <div class="stat-info"><h4 id="statProjects">0</h4><p>Projects</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange"><i class="fas fa-blog"></i></div>
+                    <div class="stat-info"><h4 id="statBlog">0</h4><p>Blog Posts</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon red"><i class="fas fa-envelope"></i></div>
+                    <div class="stat-info"><h4 id="statMessages">0</h4><p>Messages</p></div>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Quick Actions</h3>
+                <p style="color:var(--muted);margin:0.5rem 0 1rem">Manage your portfolio content from one place.</p>
+                <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+                    <button class="btn btn-primary" onclick="switchTab('skills')"><i class="fas fa-plus"></i> Add Skill</button>
+                    <button class="btn btn-primary" onclick="switchTab('projects')"><i class="fas fa-plus"></i> Add Project</button>
+                    <button class="btn btn-primary" onclick="switchTab('blog')"><i class="fas fa-plus"></i> Add Blog Post</button>
+                    <button class="btn btn-outline" onclick="switchTab('messages')"><i class="fas fa-envelope"></i> View Messages</button>
+                </div>
             </div>
         </div>
 
-        <!-- Dashboard Screen -->
-        <div id="dashboard-screen">
-            <div class="dashboard-header">
-                <h2><i class="fas fa-inbox"></i> Messages</h2>
-                <button class="logout-btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
+        <!-- ===== SKILLS ===== -->
+        <div class="tab-section" id="tab-skills">
+            <div class="page-header">
+                <h2>Skills / Tech Stack</h2>
+                <button class="btn btn-primary" onclick="openSkillModal()"><i class="fas fa-plus"></i> Add Skill</button>
             </div>
-            
-            <div id="messages-container">
-                <!-- Messages will be loaded here -->
+            <div class="card" style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Name</th><th>Icon</th><th>Level</th><th>Actions</th></tr></thead>
+                    <tbody id="skillsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== PROJECTS ===== -->
+        <div class="tab-section" id="tab-projects">
+            <div class="page-header">
+                <h2>Projects</h2>
+                <button class="btn btn-primary" onclick="openProjectModal()"><i class="fas fa-plus"></i> Add Project</button>
+            </div>
+            <div class="card" style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Title</th><th>Description</th><th>Tags</th><th>Links</th><th>Actions</th></tr></thead>
+                    <tbody id="projectsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== BLOG ===== -->
+        <div class="tab-section" id="tab-blog">
+            <div class="page-header">
+                <h2>Blog Posts</h2>
+                <button class="btn btn-primary" onclick="openBlogModal()"><i class="fas fa-plus"></i> Add Post</button>
+            </div>
+            <div class="card" style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Title</th><th>Excerpt</th><th>Tag</th><th>Date</th><th>Actions</th></tr></thead>
+                    <tbody id="blogTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== TESTIMONIALS ===== -->
+        <div class="tab-section" id="tab-testimonials">
+            <div class="page-header">
+                <h2>Testimonials</h2>
+                <button class="btn btn-primary" onclick="openTestimonialModal()"><i class="fas fa-plus"></i> Add Testimonial</button>
+            </div>
+            <div class="card" style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Quote</th><th>Author</th><th>Role</th><th>Stars</th><th>Actions</th></tr></thead>
+                    <tbody id="testimonialsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== ABOUT / HERO ===== -->
+        <div class="tab-section" id="tab-about">
+            <div class="page-header"><h2>About / Hero Section (English)</h2></div>
+            <div class="card">
+                <h3 style="margin-bottom:1rem">Hero Section</h3>
+                <div class="form-group">
+                    <label>Hero Title (HTML allowed)</label>
+                    <input type="text" id="heroTitle">
+                </div>
+                <div class="form-group">
+                    <label>Role / Subtitle (HTML allowed)</label>
+                    <input type="text" id="heroRole">
+                </div>
+                <div class="form-group">
+                    <label>Bio</label>
+                    <textarea id="heroBio" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="card">
+                <h3 style="margin-bottom:1rem">About Section</h3>
+                <div class="form-group">
+                    <label>About Paragraph 1 (HTML allowed)</label>
+                    <textarea id="aboutP1" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>About Paragraph 2 (HTML allowed)</label>
+                    <textarea id="aboutP2" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Stat 1 Number</label><input type="text" id="stat1Num"></div>
+                    <div class="form-group"><label>Stat 1 Label</label><input type="text" id="stat1Label"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Stat 2 Number</label><input type="text" id="stat2Num"></div>
+                    <div class="form-group"><label>Stat 2 Label</label><input type="text" id="stat2Label"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Stat 3 Number</label><input type="text" id="stat3Num"></div>
+                    <div class="form-group"><label>Stat 3 Label</label><input type="text" id="stat3Label"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Stat 4 Number</label><input type="text" id="stat4Num"></div>
+                    <div class="form-group"><label>Stat 4 Label</label><input type="text" id="stat4Label"></div>
+                </div>
+                <button class="btn btn-primary btn-lg" onclick="saveAbout()"><i class="fas fa-save"></i> Save About / Hero</button>
+            </div>
+        </div>
+
+        <!-- ===== MESSAGES ===== -->
+        <div class="tab-section" id="tab-messages">
+            <div class="page-header"><h2>Contact Messages</h2></div>
+            <div id="messagesContainer"></div>
+        </div>
+    </div>
+
+    <!-- ===== MODALS ===== -->
+    <!-- Skill Modal -->
+    <div class="modal-overlay" id="skillModal">
+        <div class="modal">
+            <h3 id="skillModalTitle">Add Skill</h3>
+            <input type="hidden" id="skillEditIndex" value="-1">
+            <div class="form-group"><label>Skill Name</label><input type="text" id="skillName" placeholder="e.g. React"></div>
+            <div class="form-row">
+                <div class="form-group"><label>Icon (Font Awesome class)</label><input type="text" id="skillIcon" placeholder="e.g. fab fa-react"></div>
+                <div class="form-group">
+                    <label>Level</label>
+                    <select id="skillLevel">
+                        <option value="Advanced">Advanced</option>
+                        <option value="Proficient">Proficient</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Beginner">Beginner</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('skillModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveSkill()"><i class="fas fa-save"></i> Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div class="modal-overlay" id="projectModal">
+        <div class="modal">
+            <h3 id="projectModalTitle">Add Project</h3>
+            <input type="hidden" id="projectEditIndex" value="-1">
+            <div class="form-group"><label>Project Title</label><input type="text" id="projectTitle" placeholder="e.g. My App"></div>
+            <div class="form-group"><label>Description</label><textarea id="projectDesc" placeholder="Describe the project..."></textarea></div>
+            <div class="form-group"><label>Tags (comma separated)</label><input type="text" id="projectTags" placeholder="e.g. React, Node.js, MongoDB"></div>
+            <div class="form-row">
+                <div class="form-group"><label>Live Demo URL</label><input type="text" id="projectDemo" placeholder="https://..."></div>
+                <div class="form-group"><label>GitHub URL</label><input type="text" id="projectGithub" placeholder="https://github.com/..."></div>
+            </div>
+            <div class="form-group"><label>Stars</label><input type="number" id="projectStars" value="0" min="0"></div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('projectModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveProject()"><i class="fas fa-save"></i> Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blog Modal -->
+    <div class="modal-overlay" id="blogModal">
+        <div class="modal">
+            <h3 id="blogModalTitle">Add Blog Post</h3>
+            <input type="hidden" id="blogEditIndex" value="-1">
+            <div class="form-group"><label>Title</label><input type="text" id="blogTitle" placeholder="Post title"></div>
+            <div class="form-group"><label>Excerpt</label><textarea id="blogExcerpt" placeholder="Short description..."></textarea></div>
+            <div class="form-row-3">
+                <div class="form-group"><label>Tag</label><input type="text" id="blogTag" placeholder="e.g. Frontend"></div>
+                <div class="form-group"><label>Date</label><input type="text" id="blogDate" placeholder="e.g. Aug 29, 2026"></div>
+                <div class="form-group"><label>Read Time</label><input type="text" id="blogReadTime" placeholder="e.g. 5 min read"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('blogModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveBlog()"><i class="fas fa-save"></i> Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Testimonial Modal -->
+    <div class="modal-overlay" id="testimonialModal">
+        <div class="modal">
+            <h3 id="testimonialModalTitle">Add Testimonial</h3>
+            <input type="hidden" id="testimonialEditIndex" value="-1">
+            <div class="form-group"><label>Quote</label><textarea id="testimonialQuote" placeholder="What they said..."></textarea></div>
+            <div class="form-row">
+                <div class="form-group"><label>Author Name</label><input type="text" id="testimonialAuthor" placeholder="e.g. John Doe"></div>
+                <div class="form-group"><label>Role / Company</label><input type="text" id="testimonialRole" placeholder="e.g. CEO, Company"></div>
+            </div>
+            <div class="form-group"><label>Stars (1-5)</label><input type="number" id="testimonialStars" value="5" min="1" max="5"></div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('testimonialModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveTestimonial()"><i class="fas fa-save"></i> Save</button>
             </div>
         </div>
     </div>
 
     <script>
-        const loginForm = document.getElementById('loginForm');
-        const loginError = document.getElementById('loginError');
-        const loginScreen = document.getElementById('login-screen');
-        const dashboardScreen = document.getElementById('dashboard-screen');
-        const messagesContainer = document.getElementById('messages-container');
-
+        const API = 'http://localhost:3000';
         let authToken = localStorage.getItem('admin_token') || '';
+        let contentData = {};
 
-        // Check if already logged in
-        if (authToken) {
-            fetchMessages();
-        }
-
-        loginForm.addEventListener('submit', (e) => {
+        // ===== AUTH =====
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const password = document.getElementById('password').value;
-            authToken = password;
-            fetchMessages();
+            authToken = document.getElementById('loginPassword').value;
+            try {
+                const res = await fetch(API + '/api/messages', { headers: { 'x-admin-password': authToken } });
+                if (res.ok) {
+                    localStorage.setItem('admin_token', authToken);
+                    document.getElementById('loginError').style.display = 'none';
+                    showDashboard();
+                } else {
+                    document.getElementById('loginError').style.display = 'block';
+                    authToken = '';
+                }
+            } catch (err) {
+                document.getElementById('loginError').textContent = 'Cannot connect to server.';
+                document.getElementById('loginError').style.display = 'block';
+            }
         });
 
         function logout() {
             authToken = '';
             localStorage.removeItem('admin_token');
-            document.getElementById('password').value = '';
-            dashboardScreen.style.display = 'none';
-            loginScreen.style.display = 'flex';
+            location.reload();
         }
 
-        async function fetchMessages() {
+        // ===== DASHBOARD INIT =====
+        async function showDashboard() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('sidebar').style.display = 'block';
+            document.getElementById('mainContent').style.display = 'block';
+            await loadContent();
+            await loadMessages();
+        }
+
+        // Auto login check
+        if (authToken) {
+            fetch(API + '/api/messages', { headers: { 'x-admin-password': authToken } })
+                .then(r => { if (r.ok) showDashboard(); });
+        }
+
+        // ===== LOAD DATA =====
+        async function loadContent() {
             try {
-                const response = await fetch('http://localhost:3000/api/messages', {
-                    headers: {
-                        'x-admin-password': authToken
-                    }
-                });
-
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    // Login successful
-                    localStorage.setItem('admin_token', authToken);
-                    loginError.style.display = 'none';
-                    loginScreen.style.display = 'none';
-                    dashboardScreen.style.display = 'block';
-                    
-                    renderMessages(data.messages);
-                } else {
-                    // Login failed
-                    logout();
-                    loginError.style.display = 'block';
-                    loginError.textContent = data.message || 'Authentication failed';
-                }
-            } catch (error) {
-                console.error('Error fetching messages:', error);
-                loginError.style.display = 'block';
-                loginError.textContent = 'Could not connect to the server.';
-            }
+                const res = await fetch(API + '/api/content');
+                contentData = await res.json();
+                renderSkillsTable();
+                renderProjectsTable();
+                renderBlogTable();
+                renderTestimonialsTable();
+                loadAboutFields();
+                updateStats();
+            } catch (e) { console.error('Error loading content:', e); }
         }
 
+        async function loadMessages() {
+            try {
+                const res = await fetch(API + '/api/messages', { headers: { 'x-admin-password': authToken } });
+                const data = await res.json();
+                if (data.success) {
+                    renderMessages(data.messages);
+                    document.getElementById('statMessages').textContent = data.messages.length;
+                }
+            } catch (e) { console.error('Error loading messages:', e); }
+        }
+
+        function updateStats() {
+            document.getElementById('statSkills').textContent = (contentData.techStack || []).length;
+            document.getElementById('statProjects').textContent = (contentData.projects || []).length;
+            document.getElementById('statBlog').textContent = (contentData.blogPosts || []).length;
+        }
+
+        // ===== SAVE CONTENT =====
+        async function saveContent() {
+            try {
+                const res = await fetch(API + '/api/content', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-admin-password': authToken },
+                    body: JSON.stringify(contentData)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Content saved successfully!');
+                    updateStats();
+                } else {
+                    showToast('Error: ' + data.message);
+                }
+            } catch (e) { showToast('Failed to save.'); }
+        }
+
+        // ===== TAB SWITCHING =====
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+            event.target.closest('a')?.classList.add('active');
+        }
+
+        // ===== TOAST =====
+        function showToast(msg) {
+            const t = document.getElementById('successToast');
+            document.getElementById('toastText').textContent = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+
+        // ===== MODAL HELPERS =====
+        function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+        function openModal(id) { document.getElementById(id).classList.add('show'); }
+
+        // ===== SKILLS CRUD =====
+        function renderSkillsTable() {
+            const arr = contentData.techStack || [];
+            const tb = document.getElementById('skillsTableBody');
+            if (!arr.length) { tb.innerHTML = '<tr><td colspan="4" class="empty-state">No skills yet.</td></tr>'; return; }
+            tb.innerHTML = arr.map((s, i) => `
+                <tr>
+                    <td><i class="${esc(s.icon)}" style="margin-right:8px"></i> ${esc(s.name)}</td>
+                    <td><code>${esc(s.icon)}</code></td>
+                    <td><span class="tag">${esc(s.level)}</span></td>
+                    <td class="actions">
+                        <button class="btn btn-outline btn-sm" onclick="editSkill(${i})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteSkill(${i})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        function openSkillModal(idx) {
+            document.getElementById('skillEditIndex').value = idx !== undefined ? idx : -1;
+            document.getElementById('skillModalTitle').textContent = idx !== undefined ? 'Edit Skill' : 'Add Skill';
+            if (idx !== undefined) {
+                const s = contentData.techStack[idx];
+                document.getElementById('skillName').value = s.name;
+                document.getElementById('skillIcon').value = s.icon;
+                document.getElementById('skillLevel').value = s.level;
+            } else {
+                document.getElementById('skillName').value = '';
+                document.getElementById('skillIcon').value = '';
+                document.getElementById('skillLevel').value = 'Intermediate';
+            }
+            openModal('skillModal');
+        }
+        function editSkill(i) { openSkillModal(i); }
+        function deleteSkill(i) {
+            if (!confirm('Delete this skill?')) return;
+            contentData.techStack.splice(i, 1);
+            renderSkillsTable(); saveContent();
+        }
+        function saveSkill() {
+            const idx = parseInt(document.getElementById('skillEditIndex').value);
+            const obj = {
+                name: document.getElementById('skillName').value.trim(),
+                icon: document.getElementById('skillIcon').value.trim(),
+                level: document.getElementById('skillLevel').value
+            };
+            if (!obj.name) return alert('Name is required.');
+            if (idx >= 0) { contentData.techStack[idx] = obj; }
+            else { if (!contentData.techStack) contentData.techStack = []; contentData.techStack.push(obj); }
+            closeModal('skillModal'); renderSkillsTable(); saveContent();
+        }
+
+        // ===== PROJECTS CRUD =====
+        function renderProjectsTable() {
+            const arr = contentData.projects || [];
+            const tb = document.getElementById('projectsTableBody');
+            if (!arr.length) { tb.innerHTML = '<tr><td colspan="5" class="empty-state">No projects yet.</td></tr>'; return; }
+            tb.innerHTML = arr.map((p, i) => `
+                <tr>
+                    <td><strong>${esc(p.title)}</strong></td>
+                    <td style="max-width:250px">${esc(p.desc).substring(0, 80)}...</td>
+                    <td>${(p.tags||[]).map(t => `<span class="tag">${esc(t)}</span>`).join(' ')}</td>
+                    <td>
+                        ${p.demo ? `<a href="${esc(p.demo)}" target="_blank" style="margin-right:6px"><i class="fas fa-external-link-alt"></i></a>` : ''}
+                        ${p.github ? `<a href="${esc(p.github)}" target="_blank"><i class="fab fa-github"></i></a>` : ''}
+                    </td>
+                    <td class="actions">
+                        <button class="btn btn-outline btn-sm" onclick="editProject(${i})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteProject(${i})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        function openProjectModal(idx) {
+            document.getElementById('projectEditIndex').value = idx !== undefined ? idx : -1;
+            document.getElementById('projectModalTitle').textContent = idx !== undefined ? 'Edit Project' : 'Add Project';
+            if (idx !== undefined) {
+                const p = contentData.projects[idx];
+                document.getElementById('projectTitle').value = p.title;
+                document.getElementById('projectDesc').value = p.desc;
+                document.getElementById('projectTags').value = (p.tags||[]).join(', ');
+                document.getElementById('projectDemo').value = p.demo || '';
+                document.getElementById('projectGithub').value = p.github || '';
+                document.getElementById('projectStars').value = p.stars || 0;
+            } else {
+                ['projectTitle','projectDesc','projectTags','projectDemo','projectGithub'].forEach(id => document.getElementById(id).value = '');
+                document.getElementById('projectStars').value = 0;
+            }
+            openModal('projectModal');
+        }
+        function editProject(i) { openProjectModal(i); }
+        function deleteProject(i) {
+            if (!confirm('Delete this project?')) return;
+            contentData.projects.splice(i, 1);
+            renderProjectsTable(); saveContent();
+        }
+        function saveProject() {
+            const idx = parseInt(document.getElementById('projectEditIndex').value);
+            const obj = {
+                title: document.getElementById('projectTitle').value.trim(),
+                desc: document.getElementById('projectDesc').value.trim(),
+                tags: document.getElementById('projectTags').value.split(',').map(t=>t.trim()).filter(Boolean),
+                demo: document.getElementById('projectDemo').value.trim(),
+                github: document.getElementById('projectGithub').value.trim(),
+                stars: parseInt(document.getElementById('projectStars').value) || 0
+            };
+            if (!obj.title) return alert('Title is required.');
+            if (idx >= 0) { contentData.projects[idx] = obj; }
+            else { if (!contentData.projects) contentData.projects = []; contentData.projects.push(obj); }
+            closeModal('projectModal'); renderProjectsTable(); saveContent();
+        }
+
+        // ===== BLOG CRUD =====
+        function renderBlogTable() {
+            const arr = contentData.blogPosts || [];
+            const tb = document.getElementById('blogTableBody');
+            if (!arr.length) { tb.innerHTML = '<tr><td colspan="5" class="empty-state">No posts yet.</td></tr>'; return; }
+            tb.innerHTML = arr.map((b, i) => `
+                <tr>
+                    <td><strong>${esc(b.title)}</strong></td>
+                    <td style="max-width:200px">${esc(b.excerpt).substring(0, 60)}...</td>
+                    <td><span class="tag">${esc(b.tag)}</span></td>
+                    <td>${esc(b.date)}</td>
+                    <td class="actions">
+                        <button class="btn btn-outline btn-sm" onclick="editBlog(${i})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteBlog(${i})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        function openBlogModal(idx) {
+            document.getElementById('blogEditIndex').value = idx !== undefined ? idx : -1;
+            document.getElementById('blogModalTitle').textContent = idx !== undefined ? 'Edit Post' : 'Add Post';
+            if (idx !== undefined) {
+                const b = contentData.blogPosts[idx];
+                document.getElementById('blogTitle').value = b.title;
+                document.getElementById('blogExcerpt').value = b.excerpt;
+                document.getElementById('blogTag').value = b.tag;
+                document.getElementById('blogDate').value = b.date;
+                document.getElementById('blogReadTime').value = b.readTime;
+            } else {
+                ['blogTitle','blogExcerpt','blogTag','blogDate','blogReadTime'].forEach(id => document.getElementById(id).value = '');
+            }
+            openModal('blogModal');
+        }
+        function editBlog(i) { openBlogModal(i); }
+        function deleteBlog(i) {
+            if (!confirm('Delete this blog post?')) return;
+            contentData.blogPosts.splice(i, 1);
+            renderBlogTable(); saveContent();
+        }
+        function saveBlog() {
+            const idx = parseInt(document.getElementById('blogEditIndex').value);
+            const obj = {
+                title: document.getElementById('blogTitle').value.trim(),
+                excerpt: document.getElementById('blogExcerpt').value.trim(),
+                tag: document.getElementById('blogTag').value.trim(),
+                date: document.getElementById('blogDate').value.trim(),
+                readTime: document.getElementById('blogReadTime').value.trim()
+            };
+            if (!obj.title) return alert('Title is required.');
+            if (idx >= 0) { contentData.blogPosts[idx] = obj; }
+            else { if (!contentData.blogPosts) contentData.blogPosts = []; contentData.blogPosts.push(obj); }
+            closeModal('blogModal'); renderBlogTable(); saveContent();
+        }
+
+        // ===== TESTIMONIALS CRUD =====
+        function renderTestimonialsTable() {
+            const arr = contentData.testimonials || [];
+            const tb = document.getElementById('testimonialsTableBody');
+            if (!arr.length) { tb.innerHTML = '<tr><td colspan="5" class="empty-state">No testimonials yet.</td></tr>'; return; }
+            tb.innerHTML = arr.map((t, i) => `
+                <tr>
+                    <td style="max-width:250px">"${esc(t.quote).substring(0, 60)}..."</td>
+                    <td>${esc(t.author)}</td>
+                    <td>${esc(t.role)}</td>
+                    <td>${'★'.repeat(t.stars)}${'☆'.repeat(5 - t.stars)}</td>
+                    <td class="actions">
+                        <button class="btn btn-outline btn-sm" onclick="editTestimonial(${i})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteTestimonial(${i})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        function openTestimonialModal(idx) {
+            document.getElementById('testimonialEditIndex').value = idx !== undefined ? idx : -1;
+            document.getElementById('testimonialModalTitle').textContent = idx !== undefined ? 'Edit Testimonial' : 'Add Testimonial';
+            if (idx !== undefined) {
+                const t = contentData.testimonials[idx];
+                document.getElementById('testimonialQuote').value = t.quote;
+                document.getElementById('testimonialAuthor').value = t.author;
+                document.getElementById('testimonialRole').value = t.role;
+                document.getElementById('testimonialStars').value = t.stars;
+            } else {
+                ['testimonialQuote','testimonialAuthor','testimonialRole'].forEach(id => document.getElementById(id).value = '');
+                document.getElementById('testimonialStars').value = 5;
+            }
+            openModal('testimonialModal');
+        }
+        function editTestimonial(i) { openTestimonialModal(i); }
+        function deleteTestimonial(i) {
+            if (!confirm('Delete this testimonial?')) return;
+            contentData.testimonials.splice(i, 1);
+            renderTestimonialsTable(); saveContent();
+        }
+        function saveTestimonial() {
+            const idx = parseInt(document.getElementById('testimonialEditIndex').value);
+            const obj = {
+                quote: document.getElementById('testimonialQuote').value.trim(),
+                author: document.getElementById('testimonialAuthor').value.trim(),
+                role: document.getElementById('testimonialRole').value.trim(),
+                stars: parseInt(document.getElementById('testimonialStars').value) || 5
+            };
+            if (!obj.quote) return alert('Quote is required.');
+            if (idx >= 0) { contentData.testimonials[idx] = obj; }
+            else { if (!contentData.testimonials) contentData.testimonials = []; contentData.testimonials.push(obj); }
+            closeModal('testimonialModal'); renderTestimonialsTable(); saveContent();
+        }
+
+        // ===== ABOUT / HERO =====
+        function loadAboutFields() {
+            const en = contentData.translations?.en;
+            if (!en) return;
+            document.getElementById('heroTitle').value = en.hero?.title || '';
+            document.getElementById('heroRole').value = en.hero?.role || '';
+            document.getElementById('heroBio').value = en.hero?.bio || '';
+            document.getElementById('aboutP1').value = en.about?.p1 || '';
+            document.getElementById('aboutP2').value = en.about?.p2 || '';
+            document.getElementById('stat1Num').value = en.about?.stat1?.num || '';
+            document.getElementById('stat1Label').value = en.about?.stat1?.label || '';
+            document.getElementById('stat2Num').value = en.about?.stat2?.num || '';
+            document.getElementById('stat2Label').value = en.about?.stat2?.label || '';
+            document.getElementById('stat3Num').value = en.about?.stat3?.num || '';
+            document.getElementById('stat3Label').value = en.about?.stat3?.label || '';
+            document.getElementById('stat4Num').value = en.about?.stat4?.num || '';
+            document.getElementById('stat4Label').value = en.about?.stat4?.label || '';
+        }
+
+        function saveAbout() {
+            if (!contentData.translations) contentData.translations = {};
+            if (!contentData.translations.en) contentData.translations.en = {};
+            const en = contentData.translations.en;
+            if (!en.hero) en.hero = {};
+            en.hero.title = document.getElementById('heroTitle').value;
+            en.hero.role = document.getElementById('heroRole').value;
+            en.hero.bio = document.getElementById('heroBio').value;
+            if (!en.about) en.about = {};
+            en.about.p1 = document.getElementById('aboutP1').value;
+            en.about.p2 = document.getElementById('aboutP2').value;
+            en.about.stat1 = { num: document.getElementById('stat1Num').value, label: document.getElementById('stat1Label').value };
+            en.about.stat2 = { num: document.getElementById('stat2Num').value, label: document.getElementById('stat2Label').value };
+            en.about.stat3 = { num: document.getElementById('stat3Num').value, label: document.getElementById('stat3Label').value };
+            en.about.stat4 = { num: document.getElementById('stat4Num').value, label: document.getElementById('stat4Label').value };
+            saveContent();
+        }
+
+        // ===== MESSAGES =====
         function renderMessages(messages) {
-            if (!messages || messages.length === 0) {
-                messagesContainer.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-envelope-open"></i>
-                        <h3>No messages yet</h3>
-                        <p>When visitors contact you, their messages will appear here.</p>
-                    </div>
-                `;
+            const c = document.getElementById('messagesContainer');
+            if (!messages || !messages.length) {
+                c.innerHTML = '<div class="empty-state"><i class="fas fa-envelope-open"></i><h3>No messages yet</h3><p>Messages from visitors will appear here.</p></div>';
                 return;
             }
-
-            let html = '';
-            messages.forEach(msg => {
-                const date = new Date(msg.date).toLocaleString();
-                html += `
-                    <div class="message-card">
-                        <div class="message-header">
-                            <div class="sender-info">
-                                <h3>${escapeHtml(msg.name)}</h3>
-                                <p><a href="mailto:${escapeHtml(msg.email)}">${escapeHtml(msg.email)}</a></p>
-                            </div>
-                            <div class="message-date">${date}</div>
+            c.innerHTML = messages.map(m => `
+                <div class="message-card">
+                    <div class="message-header">
+                        <div class="sender-info">
+                            <h4>${esc(m.name)}</h4>
+                            <p><a href="mailto:${esc(m.email)}">${esc(m.email)}</a></p>
                         </div>
-                        <div class="message-subject">Subject: ${escapeHtml(msg.subject || 'None')}</div>
-                        <div class="message-body">${escapeHtml(msg.message)}</div>
+                        <div class="message-date">${new Date(m.date).toLocaleString()}</div>
                     </div>
-                `;
-            });
-
-            messagesContainer.innerHTML = html;
+                    <div class="message-subject">Subject: ${esc(m.subject || 'None')}</div>
+                    <div class="message-body">${esc(m.message)}</div>
+                </div>`).join('');
         }
 
-        // Basic HTML escaping to prevent XSS
-        function escapeHtml(unsafe) {
-            if (!unsafe) return '';
-            return unsafe
-                 .replace(/&/g, "&amp;")
-                 .replace(/</g, "&lt;")
-                 .replace(/>/g, "&gt;")
-                 .replace(/"/g, "&quot;")
-                 .replace(/'/g, "&#039;");
+        // ===== UTILS =====
+        function esc(s) {
+            if (!s) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
     </script>
 </body>
