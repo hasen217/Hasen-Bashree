@@ -2,23 +2,48 @@ require('dotenv').config();
 const express = require('express');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
+const fs = require('fs').promises;
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const MESSAGES_FILE = path.join(__dirname, 'messages.json');
 
 // Middleware
-app.use(cors()); // Allow requests from your frontend
-app.use(express.json()); // Parse JSON bodies
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Setup Nodemailer transporter
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // You can change this to your email provider
+    service: 'gmail',
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     }
 });
+
+// Helper function to read messages
+async function getMessages() {
+    try {
+        const data = await fs.readFile(MESSAGES_FILE, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        // If file doesn't exist, return empty array
+        return [];
+    }
+}
+
+// Helper function to save a message
+async function saveMessage(newMessage) {
+    const messages = await getMessages();
+    messages.unshift({
+        id: Date.now(),
+        date: new Date().toISOString(),
+        ...newMessage
+    });
+    await fs.writeFile(MESSAGES_FILE, JSON.stringify(messages, null, 2));
+}
 
 // API Endpoint to handle form submissions
 app.post('/api/contact', async (req, res) => {
@@ -28,10 +53,13 @@ app.post('/api/contact', async (req, res) => {
         return res.status(400).json({ success: false, message: 'Please provide name, email, and message.' });
     }
 
+    // Save message locally
+    await saveMessage({ name, email, subject, message });
+
     const mailOptions = {
         from: `"${name}" <${process.env.EMAIL_USER}>`, 
         replyTo: email,
-        to: process.env.RECEIVER_EMAIL || process.env.EMAIL_USER, // Send to yourself
+        to: process.env.RECEIVER_EMAIL || process.env.EMAIL_USER,
         subject: subject || 'New Contact Form Submission',
         text: `You have received a new message from your portfolio website.\n\nName: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
         html: `
@@ -50,8 +78,22 @@ app.post('/api/contact', async (req, res) => {
         res.status(200).json({ success: true, message: 'Message sent successfully!' });
     } catch (error) {
         console.error('Error sending email:', error);
-        res.status(500).json({ success: false, message: 'Failed to send message. Please try again later.' });
+        // Even if email fails, message is saved, but we return success so user doesn't panic, or error. 
+        // Let's return success but log error, since it's saved.
+        res.status(500).json({ success: false, message: 'Failed to send email, but message was saved.' });
     }
+});
+
+// API Endpoint to get all messages (Protected)
+app.get('/api/messages', async (req, res) => {
+    const password = req.headers['x-admin-password'];
+    
+    if (password !== process.env.ADMIN_PASSWORD) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const messages = await getMessages();
+    res.json({ success: true, messages });
 });
 
 // Start the server
