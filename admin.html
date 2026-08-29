@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --border: #e5e7eb;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Login Screen */
+        #login-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-card h2 {
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .error-msg {
+            color: var(--error);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        /* Dashboard */
+        #dashboard-screen {
+            display: none;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .logout-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: var(--border);
+            color: var(--text-main);
+        }
+
+        .message-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--primary);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sender-info h3 {
+            font-size: 1.1rem;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
+
+        .sender-info p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .message-date {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .message-subject {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .message-body {
+            color: var(--text-main);
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+            background: var(--card-bg);
+            border-radius: 8px;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--border);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Login Screen -->
+        <div id="login-screen">
+            <div class="login-card">
+                <h2><i class="fas fa-lock"></i> Admin Access</h2>
+                <form id="loginForm">
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required placeholder="Enter admin password">
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                    <div class="error-msg" id="loginError">Incorrect password. Please try again.</div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Dashboard Screen -->
+        <div id="dashboard-screen">
+            <div class="dashboard-header">
+                <h2><i class="fas fa-inbox"></i> Messages</h2>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+            
+            <div id="messages-container">
+                <!-- Messages will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const loginScreen = document.getElementById('login-screen');
+        const dashboardScreen = document.getElementById('dashboard-screen');
+        const messagesContainer = document.getElementById('messages-container');
+
+        let authToken = localStorage.getItem('admin_token') || '';
+
+        // Check if already logged in
+        if (authToken) {
+            fetchMessages();
+        }
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+            authToken = password;
+            fetchMessages();
+        });
+
+        function logout() {
+            authToken = '';
+            localStorage.removeItem('admin_token');
+            document.getElementById('password').value = '';
+            dashboardScreen.style.display = 'none';
+            loginScreen.style.display = 'flex';
+        }
+
+        async function fetchMessages() {
+            try {
+                const response = await fetch('http://localhost:3000/api/messages', {
+                    headers: {
+                        'x-admin-password': authToken
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Login successful
+                    localStorage.setItem('admin_token', authToken);
+                    loginError.style.display = 'none';
+                    loginScreen.style.display = 'none';
+                    dashboardScreen.style.display = 'block';
+                    
+                    renderMessages(data.messages);
+                } else {
+                    // Login failed
+                    logout();
+                    loginError.style.display = 'block';
+                    loginError.textContent = data.message || 'Authentication failed';
+                }
+            } catch (error) {
+                console.error('Error fetching messages:', error);
+                loginError.style.display = 'block';
+                loginError.textContent = 'Could not connect to the server.';
+            }
+        }
+
+        function renderMessages(messages) {
+            if (!messages || messages.length === 0) {
+                messagesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-envelope-open"></i>
+                        <h3>No messages yet</h3>
+                        <p>When visitors contact you, their messages will appear here.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            messages.forEach(msg => {
+                const date = new Date(msg.date).toLocaleString();
+                html += `
+                    <div class="message-card">
+                        <div class="message-header">
+                            <div class="sender-info">
+                                <h3>${escapeHtml(msg.name)}</h3>
+                                <p><a href="mailto:${escapeHtml(msg.email)}">${escapeHtml(msg.email)}</a></p>
+                            </div>
+                            <div class="message-date">${date}</div>
+                        </div>
+                        <div class="message-subject">Subject: ${escapeHtml(msg.subject || 'None')}</div>
+                        <div class="message-body">${escapeHtml(msg.message)}</div>
+                    </div>
+                `;
+            });
+
+            messagesContainer.innerHTML = html;
+        }
+
+        // Basic HTML escaping to prevent XSS
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
