@@ -157,7 +157,9 @@
     {
       "title": "voter system",
       "desc": "new voter system",
-      "tags": [],
+      "tags": [
+        "html"
+      ],
       "demo": "hhhh",
       "github": "hhhh",
       "stars": 0
