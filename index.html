@@ -2888,47 +2888,70 @@
                 }
 
                 // Check if EmailJS is configured
-                const isConfigured = EMAILJS_CONFIG.publicKey &&
+                const isEmailJSConfigured = EMAILJS_CONFIG.publicKey &&
                     EMAILJS_CONFIG.publicKey !== 'YOUR_PUBLIC_KEY' &&
                     EMAILJS_CONFIG.serviceID !== 'YOUR_SERVICE_ID' &&
                     EMAILJS_CONFIG.templateID !== 'YOUR_TEMPLATE_ID';
 
-                if (!isConfigured) {
-                    // Show error and guide user to set up EmailJS
-                    setFormStatus(
-                        '⚠️ Email service not configured. Please set up EmailJS credentials (see console for instructions).',
-                        'error');
-                    console.error('❌ EmailJS is not configured. Please replace the placeholders in EMAILJS_CONFIG with your actual credentials from https://www.emailjs.com/');
-                    return;
-                }
-
-                // Send via EmailJS
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
 
-                const templateParams = {
-                    from_name: name,
-                    from_email: email,
-                    subject: subject,
-                    message: message,
-                    // You can add more fields if your template supports them
-                };
+                if (isEmailJSConfigured) {
+                    // Send via EmailJS
+                    const templateParams = {
+                        from_name: name,
+                        from_email: email,
+                        subject: subject,
+                        message: message,
+                    };
 
-                emailjs.send(EMAILJS_CONFIG.serviceID, EMAILJS_CONFIG.templateID, templateParams)
-                    .then(function(response) {
-                        setFormStatus('✅ Your message was sent successfully! I\'ll get back to you soon.',
-                            'success');
-                        contactForm.reset();
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+                    emailjs.send(EMAILJS_CONFIG.serviceID, EMAILJS_CONFIG.templateID, templateParams)
+                        .then(function(response) {
+                            setFormStatus('✅ Your message was sent successfully! I\'ll get back to you soon.', 'success');
+                            contactForm.reset();
+                        })
+                        .catch(function(error) {
+                            console.error('EmailJS error:', error);
+                            setFormStatus('❌ Something went wrong. Please try again or email me directly at hasenbashree@gmail.com.', 'error');
+                        })
+                        .finally(function() {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+                        });
+                } else {
+                    // Send directly to hasenbashree@gmail.com via FormSubmit AJAX service
+                    fetch('https://formsubmit.co/ajax/hasenbashree@gmail.com', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            email: email,
+                            _subject: subject,
+                            message: message,
+                            _captcha: 'false'
+                        })
+                    })
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) {
+                        if (data.success === "true" || data.success === true) {
+                            setFormStatus('✅ Your message was sent successfully! I\'ll get back to you soon.', 'success');
+                            contactForm.reset();
+                        } else {
+                            setFormStatus('❌ Unable to send message. Please try again or email directly at hasenbashree@gmail.com.', 'error');
+                        }
                     })
                     .catch(function(error) {
-                        console.error('EmailJS error:', error);
-                        setFormStatus('❌ Something went wrong. Please try again or email me directly.',
-                            'error');
+                        console.error('FormSubmit error:', error);
+                        setFormStatus('❌ Something went wrong. Please try again or email directly at hasenbashree@gmail.com.', 'error');
+                    })
+                    .finally(function() {
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
                     });
+                }
             });
 
             [formName, formEmail, formSubject, formMessage].forEach(field => {
