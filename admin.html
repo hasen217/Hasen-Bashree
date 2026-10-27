@@ -441,6 +441,11 @@
                     </select>
                 </div>
             </div>
+            <div class="form-group" style="margin-top:0.5rem">
+                <label class="form-checkbox">
+                    <input type="checkbox" id="skillPublished" checked> Published on website
+                </label>
+            </div>
             <div class="modal-actions">
                 <button class="btn btn-outline" onclick="closeModal('skillModal')">Cancel</button>
                 <button class="btn btn-primary" onclick="saveSkill()"><i class="fas fa-save"></i> Save</button>
@@ -457,10 +462,19 @@
             <div class="form-group"><label>Description</label><textarea id="projectDesc" placeholder="Describe the project..."></textarea></div>
             <div class="form-group"><label>Tags (comma separated)</label><input type="text" id="projectTags" placeholder="e.g. React, Node.js, MongoDB"></div>
             <div class="form-row">
+                <div class="form-group"><label>Category (optional)</label><input type="text" id="projectCategory" placeholder="e.g. Full Stack"></div>
+                <div class="form-group"><label>Image URL (optional)</label><input type="text" id="projectImage" placeholder="e.g. assets/preview.png or https://..."></div>
+            </div>
+            <div class="form-row">
                 <div class="form-group"><label>Live Demo URL</label><input type="text" id="projectDemo" placeholder="https://..."></div>
                 <div class="form-group"><label>GitHub URL</label><input type="text" id="projectGithub" placeholder="https://github.com/..."></div>
             </div>
             <div class="form-group"><label>Stars</label><input type="number" id="projectStars" value="0" min="0"></div>
+            <div class="form-group">
+                <label class="form-checkbox">
+                    <input type="checkbox" id="projectPublished" checked> Published on website
+                </label>
+            </div>
             <div class="modal-actions">
                 <button class="btn btn-outline" onclick="closeModal('projectModal')">Cancel</button>
                 <button class="btn btn-primary" onclick="saveProject()"><i class="fas fa-save"></i> Save</button>
@@ -480,6 +494,15 @@
                 <div class="form-group"><label>Date</label><input type="text" id="blogDate" placeholder="e.g. Aug 29, 2026"></div>
                 <div class="form-group"><label>Read Time</label><input type="text" id="blogReadTime" placeholder="e.g. 5 min read"></div>
             </div>
+            <div class="form-group">
+                <label>Cover Image URL (optional)</label>
+                <input type="text" id="blogImage" placeholder="e.g. assets/blog.png or https://...">
+            </div>
+            <div class="form-group">
+                <label class="form-checkbox">
+                    <input type="checkbox" id="blogPublished" checked> Published on website
+                </label>
+            </div>
             <div class="modal-actions">
                 <button class="btn btn-outline" onclick="closeModal('blogModal')">Cancel</button>
                 <button class="btn btn-primary" onclick="saveBlog()"><i class="fas fa-save"></i> Save</button>
@@ -498,6 +521,11 @@
                 <div class="form-group"><label>Role / Company</label><input type="text" id="testimonialRole" placeholder="e.g. CEO, Company"></div>
             </div>
             <div class="form-group"><label>Stars (1-5)</label><input type="number" id="testimonialStars" value="5" min="1" max="5"></div>
+            <div class="form-group">
+                <label class="form-checkbox">
+                    <input type="checkbox" id="testimonialPublished" checked> Published on website
+                </label>
+            </div>
             <div class="modal-actions">
                 <button class="btn btn-outline" onclick="closeModal('testimonialModal')">Cancel</button>
                 <button class="btn btn-primary" onclick="saveTestimonial()"><i class="fas fa-save"></i> Save</button>
