@@ -5,7 +5,9 @@
     "name": "hi",
     "email": "hi@gmail.com",
     "subject": "hellow",
-    "message": "hellow"
+    "message": "hellow",
+    "status": "New",
+    "replies": []
   },
   {
     "id": 1793124013901,
@@ -13,7 +15,9 @@
     "name": "Jane Doe",
     "email": "janedoe@example.com",
     "subject": "Project Inquiry",
-    "message": "Hello Hasen, would love to collaborate on a web application!"
+    "message": "Hello Hasen, would love to collaborate on a web application!",
+    "status": "New",
+    "replies": []
   },
   {
     "id": 1793123985188,
@@ -21,7 +25,9 @@
     "name": "aki",
     "email": "aki@gmail.com",
     "subject": "hi",
-    "message": "hi"
+    "message": "hi",
+    "status": "New",
+    "replies": []
   },
   {
     "id": 1793122634850,
@@ -29,7 +35,9 @@
     "name": "raju",
     "email": "raju@gmail.com",
     "subject": "hi bro how are you",
-    "message": "hi bro how are you"
+    "message": "hi bro how are you",
+    "status": "New",
+    "replies": []
   },
   {
     "id": 1788023433821,
@@ -37,7 +45,9 @@
     "name": "iram",
     "email": "imran@gmail.com",
     "subject": "imran@gmail.com",
-    "message": "asdf"
+    "message": "asdf",
+    "status": "New",
+    "replies": []
   },
   {
     "id": 1788022570642,
@@ -45,7 +55,9 @@
     "name": "a",
     "email": "a@gmail.com",
     "subject": "as",
-    "message": "m"
+    "message": "m",
+    "status": "New",
+    "replies": []
   },
   {
     "id": 1788021809434,
@@ -53,7 +65,9 @@
     "name": "hasen",
     "email": "hasen@gmail.com",
     "subject": "hi",
-    "message": "hi"
+    "message": "hi",
+    "status": "New",
+    "replies": []
   },
   {
     "id": 1788021546810,
@@ -61,7 +75,9 @@
     "name": "a",
     "email": "a@gmail.com",
     "subject": "as",
-    "message": "has"
+    "message": "has",
+    "status": "New",
+    "replies": []
   },
   {
     "id": 1788021520215,
@@ -69,7 +85,9 @@
     "name": "a",
     "email": "a@gmail.com",
     "subject": "as",
-    "message": "has"
+    "message": "has",
+    "status": "New",
+    "replies": []
   },
   {
     "id": 1788020377361,
@@ -77,6 +95,8 @@
     "name": "raji",
     "email": "raju@gmail.com",
     "subject": "as",
-    "message": "ass"
+    "message": "ass",
+    "status": "New",
+    "replies": []
   }
 ]
