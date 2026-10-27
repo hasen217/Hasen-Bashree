@@ -1594,6 +1594,51 @@
         [data-lang="ar"] .blog-card .blog-tag {
             float: right;
         }
+
+        /* Accessible Focus States */
+        :focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 3px;
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* Project & Blog card media enhancements */
+        .project-thumb-wrap, .blog-thumb-wrap {
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+            border-radius: calc(var(--radius) - 6px);
+            margin-bottom: 1rem;
+            background: var(--theme-bg);
+        }
+        .project-thumb, .blog-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform var(--transition);
+        }
+        .project-card:hover .project-thumb, .blog-card:hover .blog-thumb {
+            transform: scale(1.04);
+        }
+        .project-category {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--primary);
+            margin-bottom: 0.4rem;
+        }
     </style>
 </head>
 
