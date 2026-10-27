@@ -42,7 +42,6 @@ function requireAdmin(req, res, next) {
     next();
 }
 
-const MESSAGES_FILE = path.join(__dirname, 'messages.json');
 const MESSAGES_BACKUP = path.join(__dirname, 'messages.json.bak');
 const MESSAGES_TMP = path.join(__dirname, 'messages.json.tmp');
 
