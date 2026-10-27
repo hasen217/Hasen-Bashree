@@ -294,9 +294,13 @@
                 <h2>Skills / Tech Stack</h2>
                 <button class="btn btn-primary" onclick="openSkillModal()"><i class="fas fa-plus"></i> Add Skill</button>
             </div>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="skillSearch" placeholder="Search skills..." oninput="renderSkillsTable()">
+            </div>
             <div class="card" style="overflow-x:auto;">
                 <table class="data-table">
-                    <thead><tr><th>Name</th><th>Icon</th><th>Level</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Name</th><th>Icon</th><th>Level</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody id="skillsTableBody"></tbody>
                 </table>
             </div>
@@ -308,9 +312,13 @@
                 <h2>Projects</h2>
                 <button class="btn btn-primary" onclick="openProjectModal()"><i class="fas fa-plus"></i> Add Project</button>
             </div>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="projectSearch" placeholder="Search projects by title, description, or tag..." oninput="renderProjectsTable()">
+            </div>
             <div class="card" style="overflow-x:auto;">
                 <table class="data-table">
-                    <thead><tr><th>Title</th><th>Description</th><th>Tags</th><th>Links</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Title</th><th>Description</th><th>Tags</th><th>Status</th><th>Links</th><th>Actions</th></tr></thead>
                     <tbody id="projectsTableBody"></tbody>
                 </table>
             </div>
@@ -322,9 +330,13 @@
                 <h2>Blog Posts</h2>
                 <button class="btn btn-primary" onclick="openBlogModal()"><i class="fas fa-plus"></i> Add Post</button>
             </div>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="blogSearch" placeholder="Search blog posts..." oninput="renderBlogTable()">
+            </div>
             <div class="card" style="overflow-x:auto;">
                 <table class="data-table">
-                    <thead><tr><th>Title</th><th>Excerpt</th><th>Tag</th><th>Date</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Title</th><th>Excerpt</th><th>Tag</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody id="blogTableBody"></tbody>
                 </table>
             </div>
@@ -336,9 +348,13 @@
                 <h2>Testimonials</h2>
                 <button class="btn btn-primary" onclick="openTestimonialModal()"><i class="fas fa-plus"></i> Add Testimonial</button>
             </div>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="testimonialSearch" placeholder="Search testimonials..." oninput="renderTestimonialsTable()">
+            </div>
             <div class="card" style="overflow-x:auto;">
                 <table class="data-table">
-                    <thead><tr><th>Quote</th><th>Author</th><th>Role</th><th>Stars</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Quote</th><th>Author</th><th>Role</th><th>Stars</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody id="testimonialsTableBody"></tbody>
                 </table>
             </div>
