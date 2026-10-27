@@ -104,6 +104,12 @@
       "name": "GitHub",
       "icon": "fab fa-github",
       "level": "Proficient"
+    },
+    {
+      "name": "PHP",
+      "icon": "PHP",
+      "level": "Advanced",
+      "published": true
     }
   ],
   "projects": [
