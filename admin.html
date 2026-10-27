@@ -1218,23 +1218,98 @@
                 c.innerHTML = '<div class="empty-state"><i class="fas fa-envelope-open"></i><h3>No messages found</h3><p>Messages from visitors will appear here.</p></div>';
                 return;
             }
-            c.innerHTML = messages.map(m => `
-                <div class="message-card">
-                    <div class="message-header">
-                        <div class="sender-info">
-                            <h4>${esc(m.name)}</h4>
-                            <p><a href="mailto:${esc(m.email)}">${esc(m.email)}</a></p>
+            c.innerHTML = messages.map(m => {
+                const status = m.status || 'New';
+                let statusBadge = '';
+                if (status === 'New') {
+                    statusBadge = '<span class="badge" style="background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;padding:2px 8px;border-radius:12px;font-size:0.75rem;font-weight:600;"><i class="fas fa-circle" style="font-size:0.45rem;vertical-align:middle;margin-right:4px;"></i>New</span>';
+                } else if (status === 'Replied') {
+                    statusBadge = '<span class="badge" style="background:#dcfce7;color:#15803d;border:1px solid #86efac;padding:2px 8px;border-radius:12px;font-size:0.75rem;font-weight:600;"><i class="fas fa-reply" style="font-size:0.65rem;margin-right:4px;"></i>Replied</span>';
+                } else {
+                    statusBadge = '<span class="badge" style="background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;padding:2px 8px;border-radius:12px;font-size:0.75rem;font-weight:600;"><i class="fas fa-check" style="font-size:0.65rem;margin-right:4px;"></i>Read</span>';
+                }
+
+                const replies = Array.isArray(m.replies) ? m.replies : [];
+                let replyHistoryHtml = '';
+                if (replies.length > 0) {
+                    const items = replies.map(r => `
+                        <div class="reply-item">
+                            <div class="reply-item-header">
+                                <span><strong><i class="fas fa-check-circle" style="color:var(--success);margin-right:4px;"></i>${esc(r.sentBy || 'Admin')}</strong></span>
+                                <span>${new Date(r.sentAt || r.date || Date.now()).toLocaleString()}</span>
+                            </div>
+                            <div style="white-space:pre-wrap;color:var(--text);line-height:1.5;margin-top:0.25rem;">${esc(r.replyText)}</div>
                         </div>
-                        <div class="message-date">${new Date(m.date).toLocaleString()}</div>
+                    `).join('');
+                    replyHistoryHtml = `
+                        <div class="reply-history">
+                            <h5 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:var(--muted);display:flex;align-items:center;gap:6px;">
+                                <i class="fas fa-history"></i> Reply History (${replies.length})
+                            </h5>
+                            ${items}
+                        </div>
+                    `;
+                }
+
+                const toggleLabel = status === 'New' ? 'Mark as Read' : 'Mark as New';
+                const nextStatus = status === 'New' ? 'Read' : 'New';
+                const toggleIcon = status === 'New' ? 'fa-check' : 'fa-envelope';
+
+                return `
+                <div class="message-card status-${status}" id="msg-${m.id}">
+                    <div class="message-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+                        <div class="sender-info">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+                                <h4 style="margin:0;">${esc(m.name)}</h4>
+                                ${statusBadge}
+                            </div>
+                            <p style="margin:0;"><a href="mailto:${esc(m.email)}" style="color:var(--primary);text-decoration:none;"><i class="fas fa-envelope" style="font-size:0.8rem;margin-right:4px;"></i>${esc(m.email)}</a></p>
+                        </div>
+                        <div class="message-date" style="font-size:0.82rem;color:var(--muted);display:flex;align-items:center;gap:4px;">
+                            <i class="far fa-clock"></i> ${new Date(m.date).toLocaleString()}
+                        </div>
                     </div>
-                    <div class="message-subject">Subject: ${esc(m.subject || 'None')}</div>
-                    <div class="message-body">${esc(m.message)}</div>
-                    <div style="display:flex; justify-content:flex-end; margin-top:0.75rem;">
+                    <div class="message-subject" style="margin-top:0.75rem;font-weight:600;font-size:0.95rem;color:var(--text);">
+                        Subject: <span style="font-weight:normal;">${esc(m.subject || 'None')}</span>
+                    </div>
+                    <div class="message-body" style="margin-top:0.5rem;line-height:1.6;white-space:pre-wrap;color:var(--text);">${esc(m.message)}</div>
+
+                    ${replyHistoryHtml}
+
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--border);flex-wrap:wrap;gap:8px;">
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn btn-outline btn-sm" onclick="toggleReadStatus('${m.id}', '${nextStatus}')">
+                                <i class="fas ${toggleIcon}"></i> ${toggleLabel}
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="toggleReplyBox('${m.id}')">
+                                <i class="fas fa-reply"></i> Reply
+                            </button>
+                        </div>
                         <button class="btn btn-danger btn-sm" onclick="deleteMessage('${m.id}')">
                             <i class="fas fa-trash"></i> Delete
                         </button>
                     </div>
-                </div>`).join('');
+
+                    <div class="reply-box" id="replyBox-${m.id}">
+                        <h4><i class="fas fa-paper-plane" style="color:var(--primary)"></i> Direct Email Reply</h4>
+                        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.75rem;">
+                            Replying to <strong>${esc(m.name)}</strong> (&lt;${esc(m.email)}&gt;) &mdash; original message will be quoted automatically.
+                        </p>
+                        <div class="form-group" style="margin-bottom:0.75rem;">
+                            <textarea id="replyText-${m.id}" rows="4" placeholder="Type your response to ${esc(m.name)}..." style="width:100%;padding:0.75rem;border-radius:6px;border:1px solid var(--border);font-family:inherit;font-size:0.9rem;resize:vertical;background:var(--card);color:var(--text);"></textarea>
+                        </div>
+                        <div id="replyAlert-${m.id}" style="display:none;margin-bottom:0.75rem;font-size:0.85rem;padding:6px 10px;border-radius:4px;"></div>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <button class="btn btn-primary btn-sm" id="replyBtn-${m.id}" onclick="sendReply('${m.id}', '${esc(m.email)}', '${esc(m.subject)}')">
+                                <i class="fas fa-paper-plane"></i> Send Reply
+                            </button>
+                            <button class="btn btn-outline btn-sm" onclick="toggleReplyBox('${m.id}')">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
         }
 
         // ===== UTILS =====
