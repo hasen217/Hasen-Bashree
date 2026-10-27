@@ -589,6 +589,7 @@
         let authToken = localStorage.getItem('admin_token') || '';
         let contentData = {};
         let allMessages = [];
+        let currentInboxFilter = 'all';
 
         // Mobile sidebar toggle
         function toggleSidebar() {
