@@ -42,34 +42,74 @@ function requireAdmin(req, res, next) {
     next();
 }
 
-// Helper function to read messages
+const MESSAGES_FILE = path.join(__dirname, 'messages.json');
+const MESSAGES_BACKUP = path.join(__dirname, 'messages.json.bak');
+const MESSAGES_TMP = path.join(__dirname, 'messages.json.tmp');
+
+// Serial queue for atomic messages.json persistence
+let messageWriteQueue = Promise.resolve();
+
+async function saveMessagesSafely(messagesArray) {
+    messageWriteQueue = messageWriteQueue.then(async () => {
+        const jsonStr = JSON.stringify(messagesArray, null, 2);
+        await fs.writeFile(MESSAGES_TMP, jsonStr, 'utf8');
+        try {
+            await fs.copyFile(MESSAGES_FILE, MESSAGES_BACKUP);
+        } catch (_) {}
+        await fs.rename(MESSAGES_TMP, MESSAGES_FILE);
+    }).catch(err => {
+        console.error('Error writing messages safely:', err);
+        throw err;
+    });
+    return messageWriteQueue;
+}
+
+// Helper function to read and normalize messages
 async function getMessages() {
     try {
         const data = await fs.readFile(MESSAGES_FILE, 'utf8');
-        return JSON.parse(data);
+        const parsed = JSON.parse(data);
+        if (!Array.isArray(parsed)) return [];
+        return parsed.map(m => ({
+            id: m.id || Date.now(),
+            date: m.date || new Date().toISOString(),
+            name: m.name || '',
+            email: m.email || '',
+            subject: m.subject || '',
+            message: m.message || '',
+            status: m.status || 'New',
+            replies: Array.isArray(m.replies) ? m.replies : []
+        })).sort((a, b) => new Date(b.date) - new Date(a.date));
     } catch (error) {
-        // If file doesn't exist, return empty array
         return [];
     }
 }
 
-// Helper function to save a message
+// Helper function to save a new message
 async function saveMessage(newMessage) {
     const messages = await getMessages();
-    messages.unshift({
+    const createdMessage = {
         id: Date.now(),
         date: new Date().toISOString(),
-        ...newMessage
-    });
-    await fs.writeFile(MESSAGES_FILE, JSON.stringify(messages, null, 2));
+        name: newMessage.name,
+        email: newMessage.email,
+        subject: newMessage.subject,
+        message: newMessage.message,
+        status: 'New',
+        replies: []
+    };
+    messages.unshift(createdMessage);
+    await saveMessagesSafely(messages);
+    return createdMessage;
 }
 
 // Helper function to delete a message
 async function deleteMessageById(id) {
     const messages = await getMessages();
     const filtered = messages.filter(m => String(m.id) !== String(id));
-    await fs.writeFile(MESSAGES_FILE, JSON.stringify(filtered, null, 2));
-    return filtered.length < messages.length;
+    if (filtered.length === messages.length) return false;
+    await saveMessagesSafely(filtered);
+    return true;
 }
 
 // Server-Sent Events (SSE) clients for real-time live synchronization
@@ -114,8 +154,13 @@ app.post('/api/contact', async (req, res) => {
     const trimmedSubject = subject ? String(subject).trim().slice(0, 200) : '';
     const trimmedMessage = String(message).trim().slice(0, 5000);
 
-    // Save message locally
-    await saveMessage({
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+        return res.status(400).json({ success: false, message: 'Please provide a valid email address.' });
+    }
+
+    // Save message locally first with status New
+    const saved = await saveMessage({
         name: trimmedName,
         email: trimmedEmail,
         subject: trimmedSubject,
@@ -141,10 +186,10 @@ app.post('/api/contact', async (req, res) => {
     try {
         await transporter.sendMail(mailOptions);
         console.log('Email sent successfully');
-        res.status(200).json({ success: true, message: 'Message sent successfully!' });
+        res.status(200).json({ success: true, message: 'Message sent successfully!', messageId: saved.id });
     } catch (error) {
-        console.error('Error sending email:', error);
-        res.status(200).json({ success: true, message: 'Message saved successfully! (Email notification pending configuration).' });
+        console.error('Error sending notification email:', error.message || error);
+        res.status(200).json({ success: true, message: 'Message saved successfully! (Notification email pending configuration).', messageId: saved.id });
     }
 });
 
@@ -152,6 +197,105 @@ app.post('/api/contact', async (req, res) => {
 app.get('/api/messages', requireAdmin, async (req, res) => {
     const messages = await getMessages();
     res.json({ success: true, messages });
+});
+
+// API Endpoint to update message status (Protected)
+app.patch('/api/messages/:id/status', requireAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    if (!status || !['New', 'Read', 'Replied'].includes(status)) {
+        return res.status(400).json({ success: false, message: 'Valid status required: New, Read, or Replied.' });
+    }
+    const messages = await getMessages();
+    const target = messages.find(m => String(m.id) === String(id));
+    if (!target) {
+        return res.status(404).json({ success: false, message: 'Message not found.' });
+    }
+    target.status = status;
+    await saveMessagesSafely(messages);
+    res.json({ success: true, message: `Message status updated to ${status}.`, status: target.status });
+});
+
+// API Endpoint to reply to a visitor (Protected)
+app.post('/api/messages/:id/reply', requireAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { replyText } = req.body;
+
+    if (!replyText || !String(replyText).trim()) {
+        return res.status(400).json({ success: false, message: 'Reply text cannot be empty.' });
+    }
+
+    const messages = await getMessages();
+    const target = messages.find(m => String(m.id) === String(id));
+    if (!target) {
+        return res.status(404).json({ success: false, message: 'Message not found.' });
+    }
+
+    if (!target.email || !target.email.includes('@')) {
+        return res.status(400).json({ success: false, message: 'Recipient email is invalid or missing.' });
+    }
+
+    const cleanReply = String(replyText).trim();
+    const cleanSubject = target.subject && target.subject.toLowerCase().startsWith('re:') 
+        ? target.subject 
+        : `Re: ${target.subject || 'Your message on Hasen Portfolio'}`;
+
+    const senderEmail = process.env.EMAIL_USER || 'hasenbashree@gmail.com';
+
+    const mailOptions = {
+        from: `"Hasen Bashree" <${senderEmail}>`,
+        to: target.email,
+        replyTo: senderEmail,
+        subject: cleanSubject,
+        text: cleanReply,
+        html: `
+            <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;line-height:1.6;color:#1e293b;max-width:620px;margin:0 auto;border:1px solid #e2e8f0;border-radius:8px;padding:24px;">
+                <h3 style="color:#2563eb;margin-top:0;">Response from Hasen Bashree</h3>
+                <p>Hi ${target.name || 'there'},</p>
+                <div style="padding:14px 18px;background:#f8fafc;border-left:4px solid #2563eb;margin:16px 0;border-radius:4px;font-size:0.95rem;">
+                    <p style="white-space:pre-wrap;margin:0;">${cleanReply.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}</p>
+                </div>
+                <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;" />
+                <p style="font-size:0.85rem;color:#64748b;margin-bottom:6px;"><strong>In response to your message:</strong></p>
+                <blockquote style="font-size:0.85rem;color:#64748b;border-left:2px solid #cbd5e1;padding-left:12px;margin:0;font-style:italic;">
+                    ${(target.message || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}
+                </blockquote>
+                <p style="margin-top:24px;font-size:0.9rem;color:#334155;">Best regards,<br><strong>Hasen Bashree</strong></p>
+            </div>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log(`Reply successfully delivered to ${target.email}`);
+
+        const replyRecord = {
+            id: Date.now(),
+            sentAt: new Date().toISOString(),
+            replyText: cleanReply,
+            sentBy: senderEmail,
+            status: 'Delivered'
+        };
+
+        if (!Array.isArray(target.replies)) target.replies = [];
+        target.replies.push(replyRecord);
+        target.status = 'Replied';
+
+        await saveMessagesSafely(messages);
+
+        res.json({
+            success: true,
+            message: 'Reply sent successfully!',
+            reply: replyRecord,
+            status: target.status
+        });
+    } catch (error) {
+        console.error('Failed to send reply email:', error);
+        res.status(500).json({
+            success: false,
+            message: `Email delivery failed: ${error.message || 'SMTP error'}. Please verify EMAIL_USER and EMAIL_PASS configuration.`
+        });
+    }
 });
 
 // API Endpoint to delete a message (Protected)
