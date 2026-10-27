@@ -459,6 +459,12 @@
                 <h2>Contact Messages</h2>
                 <button class="btn btn-outline btn-sm" onclick="loadMessages()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
+            <div class="inbox-filter-bar">
+                <button class="filter-pill active" id="pill-all" onclick="setInboxFilter('all')">All <span class="count" id="countAll">0</span></button>
+                <button class="filter-pill" id="pill-new" onclick="setInboxFilter('New')">New <span class="count" id="countNew">0</span></button>
+                <button class="filter-pill" id="pill-read" onclick="setInboxFilter('Read')">Read <span class="count" id="countRead">0</span></button>
+                <button class="filter-pill" id="pill-replied" onclick="setInboxFilter('Replied')">Replied <span class="count" id="countReplied">0</span></button>
+            </div>
             <div class="search-box">
                 <i class="fas fa-search"></i>
                 <input type="text" id="messageSearch" placeholder="Search messages by sender, email, or subject..." oninput="renderFilteredMessages()">
