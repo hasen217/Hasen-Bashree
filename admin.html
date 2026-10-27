@@ -658,25 +658,175 @@
                 const data = await res.json();
                 if (data.success) {
                     allMessages = data.messages || [];
+                    updateMessageCounts();
                     renderFilteredMessages();
-                    document.getElementById('statMessages').textContent = allMessages.length;
                 }
             } catch (e) { console.error('Error loading messages:', e); }
         }
 
+        function updateMessageCounts() {
+            const total = allMessages.length;
+            const newCount = allMessages.filter(m => (m.status || 'New') === 'New').length;
+            const readCount = allMessages.filter(m => m.status === 'Read').length;
+            const repliedCount = allMessages.filter(m => m.status === 'Replied').length;
+
+            const statMessagesEl = document.getElementById('statMessages');
+            if (statMessagesEl) statMessagesEl.textContent = total;
+            const statNewCountEl = document.getElementById('statNewCount');
+            if (statNewCountEl) statNewCountEl.textContent = newCount;
+
+            const cAll = document.getElementById('countAll');
+            if (cAll) cAll.textContent = total;
+            const cNew = document.getElementById('countNew');
+            if (cNew) cNew.textContent = newCount;
+            const cRead = document.getElementById('countRead');
+            if (cRead) cRead.textContent = readCount;
+            const cReplied = document.getElementById('countReplied');
+            if (cReplied) cReplied.textContent = repliedCount;
+
+            const badge = document.getElementById('sidebarUnreadBadge');
+            if (badge) {
+                if (newCount > 0) {
+                    badge.textContent = newCount;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+
+        function setInboxFilter(filter) {
+            currentInboxFilter = filter;
+            document.querySelectorAll('.filter-pill').forEach(pill => pill.classList.remove('active'));
+            const activePill = document.getElementById('pill-' + filter.toLowerCase());
+            if (activePill) activePill.classList.add('active');
+            renderFilteredMessages();
+        }
+
         function renderFilteredMessages() {
             const q = (document.getElementById('messageSearch')?.value || '').toLowerCase().trim();
-            if (!q) {
-                renderMessages(allMessages);
+            let filtered = allMessages;
+
+            if (currentInboxFilter !== 'all') {
+                filtered = filtered.filter(m => (m.status || 'New') === currentInboxFilter);
+            }
+
+            if (q) {
+                filtered = filtered.filter(m =>
+                    (m.name || '').toLowerCase().includes(q) ||
+                    (m.email || '').toLowerCase().includes(q) ||
+                    (m.subject || '').toLowerCase().includes(q) ||
+                    (m.message || '').toLowerCase().includes(q)
+                );
+            }
+
+            renderMessages(filtered);
+        }
+
+        async function toggleReadStatus(id, newStatus) {
+            try {
+                const res = await fetch(API + '/api/messages/' + id + '/status', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'x-admin-password': authToken },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Message status updated to ' + newStatus);
+                    const msg = allMessages.find(m => String(m.id) === String(id));
+                    if (msg) msg.status = newStatus;
+                    updateMessageCounts();
+                    renderFilteredMessages();
+                } else {
+                    showToast('Error: ' + data.message);
+                }
+            } catch (e) {
+                showToast('Failed to update message status.');
+            }
+        }
+
+        function toggleReplyBox(id) {
+            const box = document.getElementById('replyBox-' + id);
+            if (!box) return;
+            box.classList.toggle('open');
+            if (box.classList.contains('open')) {
+                const textarea = document.getElementById('replyText-' + id);
+                if (textarea) textarea.focus();
+            }
+        }
+
+        async function sendReply(id, recipientEmail, originalSubject) {
+            const textarea = document.getElementById('replyText-' + id);
+            const alertBox = document.getElementById('replyAlert-' + id);
+            const sendBtn = document.getElementById('replyBtn-' + id);
+            const replyText = textarea ? textarea.value.trim() : '';
+
+            if (!replyText) {
+                if (alertBox) {
+                    alertBox.style.display = 'block';
+                    alertBox.style.color = '#ef4444';
+                    alertBox.style.background = '#fef2f2';
+                    alertBox.style.border = '1px solid #fca5a5';
+                    alertBox.textContent = 'Please enter a reply message.';
+                }
                 return;
             }
-            const filtered = allMessages.filter(m =>
-                (m.name || '').toLowerCase().includes(q) ||
-                (m.email || '').toLowerCase().includes(q) ||
-                (m.subject || '').toLowerCase().includes(q) ||
-                (m.message || '').toLowerCase().includes(q)
-            );
-            renderMessages(filtered);
+
+            if (alertBox) {
+                alertBox.style.display = 'none';
+                alertBox.textContent = '';
+            }
+            if (sendBtn) {
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            }
+
+            try {
+                const res = await fetch(API + '/api/messages/' + id + '/reply', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-admin-password': authToken
+                    },
+                    body: JSON.stringify({ replyText, subject: 'Re: ' + (originalSubject || 'Your inquiry') })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Reply sent successfully to ' + recipientEmail);
+                    if (textarea) textarea.value = '';
+                    const msg = allMessages.find(m => String(m.id) === String(id));
+                    if (msg) {
+                        msg.status = 'Replied';
+                        if (!Array.isArray(msg.replies)) msg.replies = [];
+                        msg.replies.push(data.reply);
+                    }
+                    updateMessageCounts();
+                    renderFilteredMessages();
+                } else {
+                    if (alertBox) {
+                        alertBox.style.display = 'block';
+                        alertBox.style.color = '#ef4444';
+                        alertBox.style.background = '#fef2f2';
+                        alertBox.style.border = '1px solid #fca5a5';
+                        alertBox.textContent = data.message || 'Failed to send reply.';
+                    }
+                    showToast('Error: ' + (data.message || 'Failed to send reply'));
+                }
+            } catch (e) {
+                if (alertBox) {
+                    alertBox.style.display = 'block';
+                    alertBox.style.color = '#ef4444';
+                    alertBox.style.background = '#fef2f2';
+                    alertBox.style.border = '1px solid #fca5a5';
+                    alertBox.textContent = 'Network or server error sending reply.';
+                }
+                showToast('Network error sending reply.');
+            } finally {
+                if (sendBtn) {
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Reply';
+                }
+            }
         }
 
         async function deleteMessage(id) {
@@ -689,7 +839,9 @@
                 const data = await res.json();
                 if (data.success) {
                     showToast('Message deleted successfully.');
-                    await loadMessages();
+                    allMessages = allMessages.filter(m => String(m.id) !== String(id));
+                    updateMessageCounts();
+                    renderFilteredMessages();
                 } else {
                     showToast('Error: ' + data.message);
                 }
