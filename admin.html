@@ -179,13 +179,49 @@
         .form-checkbox input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
         :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
-        .mobile-admin-bar {
-            display: none; background: var(--sidebar-bg); color: white; padding: 0.8rem 1.2rem;
-            align-items: center; justify-content: space-between; position: fixed; top: 0; left: 0; right: 0; z-index: 101;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        /* Inbox Filtering & Reply Box */
+        .inbox-filter-bar {
+            display: flex; gap: 8px; margin-bottom: 1.25rem; flex-wrap: wrap; align-items: center;
         }
-        .mobile-admin-bar button {
-            background: none; border: none; color: white; font-size: 1.25rem; cursor: pointer; padding: 4px;
+        .filter-pill {
+            padding: 0.4rem 0.9rem; border: 1px solid var(--border); background: var(--card);
+            border-radius: 20px; font-size: 0.85rem; font-weight: 500; color: var(--muted);
+            cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .filter-pill:hover { border-color: var(--primary); color: var(--primary); }
+        .filter-pill.active {
+            background: var(--primary); color: white; border-color: var(--primary);
+        }
+        .filter-pill .count {
+            background: rgba(0,0,0,0.08); padding: 1px 6px; border-radius: 10px; font-size: 0.75rem;
+        }
+        .filter-pill.active .count { background: rgba(255,255,255,0.25); color: white; }
+
+        .message-card {
+            background: var(--card); border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06); border-left: 4px solid var(--border);
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+        .message-card.status-New { border-left-color: var(--primary); }
+        .message-card.status-Read { border-left-color: #cbd5e1; }
+        .message-card.status-Replied { border-left-color: var(--success); }
+        .message-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+        .reply-box {
+            margin-top: 1rem; padding: 1.25rem; background: #f8fafc; border: 1px solid var(--border);
+            border-radius: 8px; display: none; animation: fadeIn 0.2s ease-out;
+        }
+        .reply-box.open { display: block; }
+        .reply-box h4 { font-size: 0.95rem; margin-bottom: 0.75rem; color: var(--text); display: flex; align-items: center; gap: 6px; }
+        .reply-history {
+            margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border);
+        }
+        .reply-item {
+            background: #ffffff; padding: 0.8rem 1rem; border-radius: 6px; margin-top: 0.5rem;
+            border-left: 3px solid var(--success); font-size: 0.88rem; box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
+        .reply-item-header {
+            display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.3rem;
         }
 
         @media (max-width: 768px) {
