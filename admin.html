@@ -534,9 +534,16 @@
     </div>
 
     <script>
-        const API = 'http://localhost:3000';
+        const API = window.location.protocol.startsWith('http') ? window.location.origin : 'http://localhost:3000';
         let authToken = localStorage.getItem('admin_token') || '';
         let contentData = {};
+        let allMessages = [];
+
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            if (sb) sb.classList.toggle('open');
+        }
 
         // ===== AUTH =====
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -598,10 +605,45 @@
                 const res = await fetch(API + '/api/messages', { headers: { 'x-admin-password': authToken } });
                 const data = await res.json();
                 if (data.success) {
-                    renderMessages(data.messages);
-                    document.getElementById('statMessages').textContent = data.messages.length;
+                    allMessages = data.messages || [];
+                    renderFilteredMessages();
+                    document.getElementById('statMessages').textContent = allMessages.length;
                 }
             } catch (e) { console.error('Error loading messages:', e); }
+        }
+
+        function renderFilteredMessages() {
+            const q = (document.getElementById('messageSearch')?.value || '').toLowerCase().trim();
+            if (!q) {
+                renderMessages(allMessages);
+                return;
+            }
+            const filtered = allMessages.filter(m =>
+                (m.name || '').toLowerCase().includes(q) ||
+                (m.email || '').toLowerCase().includes(q) ||
+                (m.subject || '').toLowerCase().includes(q) ||
+                (m.message || '').toLowerCase().includes(q)
+            );
+            renderMessages(filtered);
+        }
+
+        async function deleteMessage(id) {
+            if (!confirm('Are you sure you want to delete this message?')) return;
+            try {
+                const res = await fetch(API + '/api/messages/' + id, {
+                    method: 'DELETE',
+                    headers: { 'x-admin-password': authToken }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Message deleted successfully.');
+                    await loadMessages();
+                } else {
+                    showToast('Error: ' + data.message);
+                }
+            } catch (e) {
+                showToast('Failed to delete message.');
+            }
         }
 
         function updateStats() {
@@ -631,9 +673,13 @@
         // ===== TAB SWITCHING =====
         function switchTab(tab) {
             document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
-            document.getElementById('tab-' + tab).classList.add('active');
+            const targetTab = document.getElementById('tab-' + tab);
+            if (targetTab) targetTab.classList.add('active');
             document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
-            event.target.closest('a')?.classList.add('active');
+            event?.target?.closest('a')?.classList.add('active');
+            // Close mobile sidebar on tab change
+            const sb = document.getElementById('sidebar');
+            if (sb && window.innerWidth <= 768) sb.classList.remove('open');
         }
 
         // ===== TOAST =====
@@ -651,18 +697,27 @@
         // ===== SKILLS CRUD =====
         function renderSkillsTable() {
             const arr = contentData.techStack || [];
+            const q = (document.getElementById('skillSearch')?.value || '').toLowerCase().trim();
+            const filtered = q ? arr.filter(s => (s.name || '').toLowerCase().includes(q) || (s.level || '').toLowerCase().includes(q)) : arr;
             const tb = document.getElementById('skillsTableBody');
-            if (!arr.length) { tb.innerHTML = '<tr><td colspan="4" class="empty-state">No skills yet.</td></tr>'; return; }
-            tb.innerHTML = arr.map((s, i) => `
+            if (!filtered.length) { tb.innerHTML = '<tr><td colspan="5" class="empty-state">No skills found.</td></tr>'; return; }
+            tb.innerHTML = filtered.map((s) => {
+                const i = arr.indexOf(s);
+                const statusHtml = s.published !== false
+                    ? '<span class="badge badge-published"><i class="fas fa-check-circle"></i> Published</span>'
+                    : '<span class="badge badge-draft"><i class="fas fa-eye-slash"></i> Draft</span>';
+                return `
                 <tr>
                     <td><i class="${esc(s.icon)}" style="margin-right:8px"></i> ${esc(s.name)}</td>
                     <td><code>${esc(s.icon)}</code></td>
                     <td><span class="tag">${esc(s.level)}</span></td>
+                    <td>${statusHtml}</td>
                     <td class="actions">
-                        <button class="btn btn-outline btn-sm" onclick="editSkill(${i})"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteSkill(${i})"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-outline btn-sm" onclick="editSkill(${i})" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteSkill(${i})" title="Delete"><i class="fas fa-trash"></i></button>
                     </td>
-                </tr>`).join('');
+                </tr>`;
+            }).join('');
         }
 
         function openSkillModal(idx) {
@@ -670,13 +725,15 @@
             document.getElementById('skillModalTitle').textContent = idx !== undefined ? 'Edit Skill' : 'Add Skill';
             if (idx !== undefined) {
                 const s = contentData.techStack[idx];
-                document.getElementById('skillName').value = s.name;
-                document.getElementById('skillIcon').value = s.icon;
-                document.getElementById('skillLevel').value = s.level;
+                document.getElementById('skillName').value = s.name || '';
+                document.getElementById('skillIcon').value = s.icon || '';
+                document.getElementById('skillLevel').value = s.level || 'Intermediate';
+                document.getElementById('skillPublished').checked = (s.published !== false);
             } else {
                 document.getElementById('skillName').value = '';
                 document.getElementById('skillIcon').value = '';
                 document.getElementById('skillLevel').value = 'Intermediate';
+                document.getElementById('skillPublished').checked = true;
             }
             openModal('skillModal');
         }
@@ -691,7 +748,8 @@
             const obj = {
                 name: document.getElementById('skillName').value.trim(),
                 icon: document.getElementById('skillIcon').value.trim(),
-                level: document.getElementById('skillLevel').value
+                level: document.getElementById('skillLevel').value,
+                published: document.getElementById('skillPublished').checked
             };
             if (!obj.name) return alert('Name is required.');
             if (idx >= 0) { contentData.techStack[idx] = obj; }
@@ -702,22 +760,35 @@
         // ===== PROJECTS CRUD =====
         function renderProjectsTable() {
             const arr = contentData.projects || [];
+            const q = (document.getElementById('projectSearch')?.value || '').toLowerCase().trim();
+            const filtered = q ? arr.filter(p =>
+                (p.title || '').toLowerCase().includes(q) ||
+                (p.desc || '').toLowerCase().includes(q) ||
+                (p.tags || []).some(t => t.toLowerCase().includes(q))
+            ) : arr;
             const tb = document.getElementById('projectsTableBody');
-            if (!arr.length) { tb.innerHTML = '<tr><td colspan="5" class="empty-state">No projects yet.</td></tr>'; return; }
-            tb.innerHTML = arr.map((p, i) => `
+            if (!filtered.length) { tb.innerHTML = '<tr><td colspan="6" class="empty-state">No projects found.</td></tr>'; return; }
+            tb.innerHTML = filtered.map((p) => {
+                const i = arr.indexOf(p);
+                const statusHtml = p.published !== false
+                    ? '<span class="badge badge-published"><i class="fas fa-check-circle"></i> Published</span>'
+                    : '<span class="badge badge-draft"><i class="fas fa-eye-slash"></i> Draft</span>';
+                return `
                 <tr>
                     <td><strong>${esc(p.title)}</strong></td>
                     <td style="max-width:250px">${esc(p.desc).substring(0, 80)}...</td>
                     <td>${(p.tags||[]).map(t => `<span class="tag">${esc(t)}</span>`).join(' ')}</td>
+                    <td>${statusHtml}</td>
                     <td>
-                        ${p.demo ? `<a href="${esc(p.demo)}" target="_blank" style="margin-right:6px"><i class="fas fa-external-link-alt"></i></a>` : ''}
-                        ${p.github ? `<a href="${esc(p.github)}" target="_blank"><i class="fab fa-github"></i></a>` : ''}
+                        ${p.demo ? `<a href="${esc(p.demo)}" target="_blank" rel="noopener" style="margin-right:6px"><i class="fas fa-external-link-alt"></i></a>` : ''}
+                        ${p.github ? `<a href="${esc(p.github)}" target="_blank" rel="noopener"><i class="fab fa-github"></i></a>` : ''}
                     </td>
                     <td class="actions">
-                        <button class="btn btn-outline btn-sm" onclick="editProject(${i})"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteProject(${i})"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-outline btn-sm" onclick="editProject(${i})" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteProject(${i})" title="Delete"><i class="fas fa-trash"></i></button>
                     </td>
-                </tr>`).join('');
+                </tr>`;
+            }).join('');
         }
 
         function openProjectModal(idx) {
@@ -725,15 +796,19 @@
             document.getElementById('projectModalTitle').textContent = idx !== undefined ? 'Edit Project' : 'Add Project';
             if (idx !== undefined) {
                 const p = contentData.projects[idx];
-                document.getElementById('projectTitle').value = p.title;
-                document.getElementById('projectDesc').value = p.desc;
+                document.getElementById('projectTitle').value = p.title || '';
+                document.getElementById('projectDesc').value = p.desc || '';
                 document.getElementById('projectTags').value = (p.tags||[]).join(', ');
+                document.getElementById('projectCategory').value = p.category || '';
+                document.getElementById('projectImage').value = p.image || '';
                 document.getElementById('projectDemo').value = p.demo || '';
                 document.getElementById('projectGithub').value = p.github || '';
                 document.getElementById('projectStars').value = p.stars || 0;
+                document.getElementById('projectPublished').checked = (p.published !== false);
             } else {
-                ['projectTitle','projectDesc','projectTags','projectDemo','projectGithub'].forEach(id => document.getElementById(id).value = '');
+                ['projectTitle','projectDesc','projectTags','projectCategory','projectImage','projectDemo','projectGithub'].forEach(id => document.getElementById(id).value = '');
                 document.getElementById('projectStars').value = 0;
+                document.getElementById('projectPublished').checked = true;
             }
             openModal('projectModal');
         }
@@ -749,9 +824,12 @@
                 title: document.getElementById('projectTitle').value.trim(),
                 desc: document.getElementById('projectDesc').value.trim(),
                 tags: document.getElementById('projectTags').value.split(',').map(t=>t.trim()).filter(Boolean),
+                category: document.getElementById('projectCategory').value.trim(),
+                image: document.getElementById('projectImage').value.trim(),
                 demo: document.getElementById('projectDemo').value.trim(),
                 github: document.getElementById('projectGithub').value.trim(),
-                stars: parseInt(document.getElementById('projectStars').value) || 0
+                stars: parseInt(document.getElementById('projectStars').value) || 0,
+                published: document.getElementById('projectPublished').checked
             };
             if (!obj.title) return alert('Title is required.');
             if (idx >= 0) { contentData.projects[idx] = obj; }
@@ -762,19 +840,28 @@
         // ===== BLOG CRUD =====
         function renderBlogTable() {
             const arr = contentData.blogPosts || [];
+            const q = (document.getElementById('blogSearch')?.value || '').toLowerCase().trim();
+            const filtered = q ? arr.filter(b => (b.title || '').toLowerCase().includes(q) || (b.tag || '').toLowerCase().includes(q)) : arr;
             const tb = document.getElementById('blogTableBody');
-            if (!arr.length) { tb.innerHTML = '<tr><td colspan="5" class="empty-state">No posts yet.</td></tr>'; return; }
-            tb.innerHTML = arr.map((b, i) => `
+            if (!filtered.length) { tb.innerHTML = '<tr><td colspan="6" class="empty-state">No posts found.</td></tr>'; return; }
+            tb.innerHTML = filtered.map((b) => {
+                const i = arr.indexOf(b);
+                const statusHtml = b.published !== false
+                    ? '<span class="badge badge-published"><i class="fas fa-check-circle"></i> Published</span>'
+                    : '<span class="badge badge-draft"><i class="fas fa-eye-slash"></i> Draft</span>';
+                return `
                 <tr>
                     <td><strong>${esc(b.title)}</strong></td>
                     <td style="max-width:200px">${esc(b.excerpt).substring(0, 60)}...</td>
                     <td><span class="tag">${esc(b.tag)}</span></td>
                     <td>${esc(b.date)}</td>
+                    <td>${statusHtml}</td>
                     <td class="actions">
-                        <button class="btn btn-outline btn-sm" onclick="editBlog(${i})"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteBlog(${i})"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-outline btn-sm" onclick="editBlog(${i})" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteBlog(${i})" title="Delete"><i class="fas fa-trash"></i></button>
                     </td>
-                </tr>`).join('');
+                </tr>`;
+            }).join('');
         }
 
         function openBlogModal(idx) {
@@ -782,13 +869,16 @@
             document.getElementById('blogModalTitle').textContent = idx !== undefined ? 'Edit Post' : 'Add Post';
             if (idx !== undefined) {
                 const b = contentData.blogPosts[idx];
-                document.getElementById('blogTitle').value = b.title;
-                document.getElementById('blogExcerpt').value = b.excerpt;
-                document.getElementById('blogTag').value = b.tag;
-                document.getElementById('blogDate').value = b.date;
-                document.getElementById('blogReadTime').value = b.readTime;
+                document.getElementById('blogTitle').value = b.title || '';
+                document.getElementById('blogExcerpt').value = b.excerpt || '';
+                document.getElementById('blogTag').value = b.tag || '';
+                document.getElementById('blogDate').value = b.date || '';
+                document.getElementById('blogReadTime').value = b.readTime || '';
+                document.getElementById('blogImage').value = b.image || '';
+                document.getElementById('blogPublished').checked = (b.published !== false);
             } else {
-                ['blogTitle','blogExcerpt','blogTag','blogDate','blogReadTime'].forEach(id => document.getElementById(id).value = '');
+                ['blogTitle','blogExcerpt','blogTag','blogDate','blogReadTime','blogImage'].forEach(id => document.getElementById(id).value = '');
+                document.getElementById('blogPublished').checked = true;
             }
             openModal('blogModal');
         }
@@ -805,7 +895,9 @@
                 excerpt: document.getElementById('blogExcerpt').value.trim(),
                 tag: document.getElementById('blogTag').value.trim(),
                 date: document.getElementById('blogDate').value.trim(),
-                readTime: document.getElementById('blogReadTime').value.trim()
+                readTime: document.getElementById('blogReadTime').value.trim(),
+                image: document.getElementById('blogImage').value.trim(),
+                published: document.getElementById('blogPublished').checked
             };
             if (!obj.title) return alert('Title is required.');
             if (idx >= 0) { contentData.blogPosts[idx] = obj; }
@@ -816,19 +908,28 @@
         // ===== TESTIMONIALS CRUD =====
         function renderTestimonialsTable() {
             const arr = contentData.testimonials || [];
+            const q = (document.getElementById('testimonialSearch')?.value || '').toLowerCase().trim();
+            const filtered = q ? arr.filter(t => (t.author || '').toLowerCase().includes(q) || (t.quote || '').toLowerCase().includes(q)) : arr;
             const tb = document.getElementById('testimonialsTableBody');
-            if (!arr.length) { tb.innerHTML = '<tr><td colspan="5" class="empty-state">No testimonials yet.</td></tr>'; return; }
-            tb.innerHTML = arr.map((t, i) => `
+            if (!filtered.length) { tb.innerHTML = '<tr><td colspan="6" class="empty-state">No testimonials found.</td></tr>'; return; }
+            tb.innerHTML = filtered.map((t) => {
+                const i = arr.indexOf(t);
+                const statusHtml = t.published !== false
+                    ? '<span class="badge badge-published"><i class="fas fa-check-circle"></i> Published</span>'
+                    : '<span class="badge badge-draft"><i class="fas fa-eye-slash"></i> Draft</span>';
+                return `
                 <tr>
                     <td style="max-width:250px">"${esc(t.quote).substring(0, 60)}..."</td>
                     <td>${esc(t.author)}</td>
                     <td>${esc(t.role)}</td>
                     <td>${'★'.repeat(t.stars)}${'☆'.repeat(5 - t.stars)}</td>
+                    <td>${statusHtml}</td>
                     <td class="actions">
-                        <button class="btn btn-outline btn-sm" onclick="editTestimonial(${i})"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteTestimonial(${i})"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-outline btn-sm" onclick="editTestimonial(${i})" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteTestimonial(${i})" title="Delete"><i class="fas fa-trash"></i></button>
                     </td>
-                </tr>`).join('');
+                </tr>`;
+            }).join('');
         }
 
         function openTestimonialModal(idx) {
@@ -836,13 +937,15 @@
             document.getElementById('testimonialModalTitle').textContent = idx !== undefined ? 'Edit Testimonial' : 'Add Testimonial';
             if (idx !== undefined) {
                 const t = contentData.testimonials[idx];
-                document.getElementById('testimonialQuote').value = t.quote;
-                document.getElementById('testimonialAuthor').value = t.author;
-                document.getElementById('testimonialRole').value = t.role;
-                document.getElementById('testimonialStars').value = t.stars;
+                document.getElementById('testimonialQuote').value = t.quote || '';
+                document.getElementById('testimonialAuthor').value = t.author || '';
+                document.getElementById('testimonialRole').value = t.role || '';
+                document.getElementById('testimonialStars').value = t.stars || 5;
+                document.getElementById('testimonialPublished').checked = (t.published !== false);
             } else {
                 ['testimonialQuote','testimonialAuthor','testimonialRole'].forEach(id => document.getElementById(id).value = '');
                 document.getElementById('testimonialStars').value = 5;
+                document.getElementById('testimonialPublished').checked = true;
             }
             openModal('testimonialModal');
         }
@@ -858,7 +961,8 @@
                 quote: document.getElementById('testimonialQuote').value.trim(),
                 author: document.getElementById('testimonialAuthor').value.trim(),
                 role: document.getElementById('testimonialRole').value.trim(),
-                stars: parseInt(document.getElementById('testimonialStars').value) || 5
+                stars: parseInt(document.getElementById('testimonialStars').value) || 5,
+                published: document.getElementById('testimonialPublished').checked
             };
             if (!obj.quote) return alert('Quote is required.');
             if (idx >= 0) { contentData.testimonials[idx] = obj; }
@@ -907,7 +1011,7 @@
         function renderMessages(messages) {
             const c = document.getElementById('messagesContainer');
             if (!messages || !messages.length) {
-                c.innerHTML = '<div class="empty-state"><i class="fas fa-envelope-open"></i><h3>No messages yet</h3><p>Messages from visitors will appear here.</p></div>';
+                c.innerHTML = '<div class="empty-state"><i class="fas fa-envelope-open"></i><h3>No messages found</h3><p>Messages from visitors will appear here.</p></div>';
                 return;
             }
             c.innerHTML = messages.map(m => `
@@ -921,6 +1025,11 @@
                     </div>
                     <div class="message-subject">Subject: ${esc(m.subject || 'None')}</div>
                     <div class="message-body">${esc(m.message)}</div>
+                    <div style="display:flex; justify-content:flex-end; margin-top:0.75rem;">
+                        <button class="btn btn-danger btn-sm" onclick="deleteMessage('${m.id}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
                 </div>`).join('');
         }
 
