@@ -2557,7 +2557,7 @@
                         });
                 } else {
                     // Send to our custom Node.js backend
-                    fetch('http://localhost:3000/api/contact', {
+                    fetch('/api/contact', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -2621,7 +2621,54 @@
             });
 
             // ============================================================
-            // 15. INIT
+            // 15. DYNAMIC REFRESH & LIVE SYNC
+            // ============================================================
+            async function refreshContent() {
+                try {
+                    const res = await fetch('/api/content');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.techStack) techStack = data.techStack;
+                        if (data.projects) projects = data.projects;
+                        if (data.blogPosts) blogPosts = data.blogPosts;
+                        if (data.testimonials) testimonials = data.testimonials;
+                        if (data.translations) translations = data.translations;
+
+                        const lang = getPreferredLang();
+                        applyTranslations(lang);
+                        renderSkills();
+                        renderProjects();
+                        renderBlog();
+                        renderTestimonials();
+                    }
+                } catch (e) {
+                    console.error('Error refreshing dynamic content:', e);
+                }
+            }
+
+            function initLiveSync() {
+                if (!window.EventSource) return;
+                try {
+                    const evtSource = new EventSource('/api/content/stream');
+                    evtSource.addEventListener('content-updated', () => {
+                        refreshContent();
+                    });
+                    evtSource.onerror = () => {
+                        // EventSource automatically handles reconnection
+                    };
+                } catch (err) {
+                    console.warn('Live sync note:', err);
+                }
+            }
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    refreshContent();
+                }
+            });
+
+            // ============================================================
+            // 16. INIT
             // ============================================================
             async function init() {
                 try {
@@ -2654,6 +2701,9 @@
                 renderBlog();
                 renderTestimonials();
                 fetchGitHubData('Hasen217');
+
+                // Start SSE live synchronization
+                initLiveSync();
 
                 // Fade-in observer
                 const observer = new IntersectionObserver((entries) => {
