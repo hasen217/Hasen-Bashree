@@ -224,6 +224,15 @@
             display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.3rem;
         }
 
+        .mobile-admin-bar {
+            display: none; background: var(--sidebar-bg); color: white; padding: 0.8rem 1.2rem;
+            align-items: center; justify-content: space-between; position: fixed; top: 0; left: 0; right: 0; z-index: 101;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .mobile-admin-bar button {
+            background: none; border: none; color: white; font-size: 1.25rem; cursor: pointer; padding: 4px;
+        }
+
         @media (max-width: 768px) {
             .mobile-admin-bar { display: flex; }
             .sidebar {
