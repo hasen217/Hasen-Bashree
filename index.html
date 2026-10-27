@@ -2019,7 +2019,8 @@
 
             // ============================================================
             // 2. TRANSLATIONS (i18n)
-
+            // ============================================================
+            let translations = {};
 
             // ============================================================
             // 3. DOM REFS
@@ -2055,28 +2056,42 @@
             // 4. RENDER FUNCTIONS
             // ============================================================
             function renderSkills() {
-                skillsGrid.innerHTML = techStack.map(s => `
+                const list = (techStack || []).filter(s => s.published !== false);
+                if (!list.length) {
+                    skillsGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:2rem;">No skills to display right now.</div>';
+                    return;
+                }
+                skillsGrid.innerHTML = list.map(s => `
                     <div class="skill-item fade-in">
-                        <i class="${s.icon}"></i>
-                        <div class="name">${s.name}</div>
-                        <div class="level">${s.level}</div>
+                        <i class="${s.icon || 'fas fa-code'}"></i>
+                        <div class="name">${s.name || ''}</div>
+                        <div class="level">${s.level || ''}</div>
                     </div>
                 `).join('');
             }
 
             function renderProjects() {
-                projectsGrid.innerHTML = projects.map(p => {
+                const list = (projects || []).filter(p => p.published !== false);
+                if (!list.length) {
+                    projectsGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:2rem;">No projects to display right now.</div>';
+                    return;
+                }
+                projectsGrid.innerHTML = list.map(p => {
                     const starHtml = p.stars > 0 ?
                         `<span class="project-star"><i class="fas fa-star"></i> ${p.stars}</span>` : '';
+                    const categoryHtml = p.category ? `<div class="project-category">${p.category}</div>` : '';
+                    const imageHtml = p.image ? `<div class="project-thumb-wrap"><img src="${p.image}" alt="${p.title}" class="project-thumb" loading="lazy"></div>` : '';
                     return `
                         <div class="project-card fade-in">
+                            ${imageHtml}
                             <div class="icon"><i class="fas fa-code"></i></div>
+                            ${categoryHtml}
                             <h3>${p.title} ${starHtml}</h3>
                             <p>${p.desc}</p>
-                            <div class="tags">${p.tags.map(t => `<span>${t}</span>`).join('')}</div>
+                            <div class="tags">${(p.tags || []).map(t => `<span>${t}</span>`).join('')}</div>
                             <div class="links">
-                                <a href="${p.demo}" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i> Live Demo</a>
-                                <a href="${p.github}" target="_blank" rel="noopener"><i class="fab fa-github"></i> GitHub</a>
+                                ${p.demo ? `<a href="${p.demo}" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i> Live Demo</a>` : ''}
+                                ${p.github ? `<a href="${p.github}" target="_blank" rel="noopener"><i class="fab fa-github"></i> GitHub</a>` : ''}
                             </div>
                         </div>
                     `;
@@ -2084,21 +2099,34 @@
             }
 
             function renderBlog() {
-                blogGrid.innerHTML = blogPosts.map(post => `
+                const list = (blogPosts || []).filter(b => b.published !== false);
+                if (!list.length) {
+                    blogGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:2rem;">No articles published yet.</div>';
+                    return;
+                }
+                blogGrid.innerHTML = list.map(post => {
+                    const imageHtml = post.image ? `<div class="blog-thumb-wrap"><img src="${post.image}" alt="${post.title}" class="blog-thumb" loading="lazy"></div>` : '';
+                    return `
                     <div class="blog-card fade-in">
-                        <span class="blog-tag">${post.tag}</span>
+                        ${imageHtml}
+                        <span class="blog-tag">${post.tag || 'General'}</span>
                         <h4>${post.title}</h4>
-                        <div class="blog-meta">${post.date} · ${post.readTime}</div>
-                        <p>${post.excerpt}</p>
+                        <div class="blog-meta">${post.date || ''}${post.readTime ? ' · ' + post.readTime : ''}</div>
+                        <p>${post.excerpt || ''}</p>
                         <span class="read-more">Read More →</span>
                     </div>
-                `).join('');
+                `}).join('');
             }
 
             function renderTestimonials() {
-                testimonialsGrid.innerHTML = testimonials.map(t => `
+                const list = (testimonials || []).filter(t => t.published !== false);
+                if (!list.length) {
+                    testimonialsGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:2rem;">Testimonials will appear here soon.</div>';
+                    return;
+                }
+                testimonialsGrid.innerHTML = list.map(t => `
                     <div class="testimonial-card fade-in">
-                        <div class="stars">${'★'.repeat(t.stars)}${'☆'.repeat(5 - t.stars)}</div>
+                        <div class="stars">${'★'.repeat(t.stars || 5)}${'☆'.repeat(Math.max(0, 5 - (t.stars || 5)))}</div>
                         <div class="quote">“${t.quote}”</div>
                         <div class="author">${t.author}</div>
                         <div class="role">${t.role}</div>
