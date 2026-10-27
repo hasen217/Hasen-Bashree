@@ -410,7 +410,14 @@
 
         <!-- ===== MESSAGES ===== -->
         <div class="tab-section" id="tab-messages">
-            <div class="page-header"><h2>Contact Messages</h2></div>
+            <div class="page-header">
+                <h2>Contact Messages</h2>
+                <button class="btn btn-outline btn-sm" onclick="loadMessages()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="messageSearch" placeholder="Search messages by sender, email, or subject..." oninput="renderFilteredMessages()">
+            </div>
             <div id="messagesContainer"></div>
         </div>
     </div>
