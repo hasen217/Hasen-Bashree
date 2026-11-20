@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Environment variables (secrets)
+.env
+
+# Backups
+*.bak
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
