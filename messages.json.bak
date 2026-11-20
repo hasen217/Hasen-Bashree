@@ -1,22 +1,12 @@
 [
   {
-    "id": 1793124266580,
-    "date": "2026-10-27T18:04:26.580Z",
-    "name": "Sarah Connor",
-    "email": "sarah.connor@example.com",
-    "subject": "Cybernetics Consultation",
-    "message": "Need consulting on defense networks and full stack security.",
-    "status": "New",
-    "replies": []
-  },
-  {
     "id": 1793124161234,
     "date": "2026-10-27T18:02:41.234Z",
     "name": "hi",
     "email": "hi@gmail.com",
     "subject": "hellow",
     "message": "hellow",
-    "status": "New",
+    "status": "Read",
     "replies": []
   },
   {
@@ -26,7 +16,7 @@
     "email": "janedoe@example.com",
     "subject": "Project Inquiry",
     "message": "Hello Hasen, would love to collaborate on a web application!",
-    "status": "New",
+    "status": "Read",
     "replies": []
   },
   {
