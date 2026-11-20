@@ -16,7 +16,7 @@
     "email": "janedoe@example.com",
     "subject": "Project Inquiry",
     "message": "Hello Hasen, would love to collaborate on a web application!",
-    "status": "Read",
+    "status": "New",
     "replies": []
   },
   {
@@ -26,7 +26,7 @@
     "email": "aki@gmail.com",
     "subject": "hi",
     "message": "hi",
-    "status": "New",
+    "status": "Read",
     "replies": []
   },
   {

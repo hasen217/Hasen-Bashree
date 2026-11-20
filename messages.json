@@ -26,7 +26,7 @@
     "email": "aki@gmail.com",
     "subject": "hi",
     "message": "hi",
-    "status": "New",
+    "status": "Read",
     "replies": []
   },
   {
@@ -36,7 +36,7 @@
     "email": "raju@gmail.com",
     "subject": "hi bro how are you",
     "message": "hi bro how are you",
-    "status": "New",
+    "status": "Read",
     "replies": []
   },
   {
